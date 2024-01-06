@@ -1,0 +1,44 @@
+.dropdown-container {
+  position: relative;
+  width: 200px; /* Задайте желаемую ширину */
+}
+
+.selected-item {
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+}
+
+.selected-image {
+  width: 30px; /* Регулируйте размер изображения по вашему усмотрению */
+  height: 30px;
+  margin-right: 10px;
+}
+
+.options-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.options-list li {
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.option-image {
+  width: 20px; /* Регулируйте размер изображения по вашему усмотрению */
+  height: 20px;
+  margin-right: 10px;
+}

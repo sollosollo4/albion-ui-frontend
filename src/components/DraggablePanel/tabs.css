@@ -1,0 +1,33 @@
+.tabs-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tab-header {
+    display: flex;
+    height: 15px; /* Фиксированная высота для табов */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .tab-header:hover {
+    opacity: 1; /* Появление при наведении на .tabs-container */
+  }
+  
+  .tab-item {
+    flex: 1;
+    font-size: 10px;
+    text-align: center;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f0f0f0;
+  }
+  
+  .tab-item.active {
+    background-color: #e0e0e0;
+  }
+  
+  .tab-content {
+    flex: 1;
+    padding: 10px;
+  }
+  

@@ -1,0 +1,96 @@
+.draggable-panel {
+  position: absolute;
+  width: 100px;
+  height: 200px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  opacity: 0.5;
+}
+  
+.panel-header {
+  height: 10px;
+  background-color: #c9c72e;
+  cursor: move;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.panel-header:hover {
+  opacity: 1; /* Появление при наведении на .tabs-container */
+}
+
+.dragging {
+  opacity: 0.2;
+}
+
+.resizable-div {
+  border: 1px solid #000;
+  overflow: hidden;
+  display: inline-block;
+  margin: 1px; /* Добавим 1px отступ, чтобы сделать пространство для границы */
+  box-sizing: border-box; /* Учтем границу при расчете размера блока */
+}
+
+.resizable-handle {
+  position: absolute;
+  width: 2px; /* Ширина "хвата" */
+  height: 21px;
+}
+
+
+.resizable-handle.right {
+  top: 50%;
+  right: 0;
+  height: 100%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizable-handle.bottom {
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resizable-handle.left {
+  top: 50%;
+  left: 0;
+  height: 100%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizable-handle.top-left {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.resizable-handle.top-right {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+
+.resizable-handle.bottom-left {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+.resizable-handle.bottom-right {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}
+
+.resizable-div.resizing .resizable-handle {
+  cursor: grabbing;
+}
+
+.inner-container {
+  padding: 10px;
+  background-color: #ccc;
+}

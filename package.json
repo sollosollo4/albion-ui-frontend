@@ -1,0 +1,71 @@
+{
+  "name": "albion-ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron/main.js",
+  "productName": "Albion-UI",
+  "homepage": "./",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "electron-overlay-window": "^3.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "react-scripts": "^5.0.1",
+    "socket.io-client": "^2.3.0",
+    "styled-components": "^6.1.1",
+    "throttle-debounce": "^5.0.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "set BROWSER=none&& react-scripts start",
+    "electron": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
+    "react-start": "react-scripts start",
+    "react-test": "react-scripts test --env=jsdom",
+    "react-eject": "react-scripts eject",
+    "build-react": "react-scripts build",
+    "build-electron": "mkdir build/electron & robocopy electron build/electron /S",
+    "package": "electron-builder build --win -c.extraMetadata.main=build/electron/main.js --publish never"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "laravel-echo": "^1.15.3"
+  },
+  "build": {
+    "files": [
+      "./build/*",
+      "./node_modules/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "repo": "electron-cra-example",
+      "owner": "johndyer24"
+    },
+    "extraMetadata": {
+      "main": "./build/electron/main.js"
+    }
+  }
+}

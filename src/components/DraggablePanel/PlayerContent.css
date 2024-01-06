@@ -1,0 +1,40 @@
+/* styles.css */
+
+.container {
+    display: flex;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  .leftSection {
+    margin-right: 20px;
+  }
+  
+  .selectDropdown {
+    height: 15px;
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+  }
+  
+  .rightSection {
+    font-size: 14px;
+  }
+  
+  .formContainer {
+    margin-bottom: 10px;
+  }
+  
+  .formLabel {
+    margin-right: 10px;
+  }
+  
+  .formInput {
+    padding: 5px;
+    width: 150px;
+  }
+  
+  .image {
+    margin-right: 5px;
+    vertical-align: middle;
+  }
