@@ -13,17 +13,35 @@ window.Echo = new Echo({
   broadcaster: 'socket.io',
   appId: "albion_ui",
   key: "9430d58808113719364022fc195654ea",
-  host: window.location.hostname + ':6001',
-  wsHost: window.location.hostname,
+  host: "albion-overlay.ru:6001",
+  wsHost: "albion-overlay.ru",
+  // wsHost: window.location.hostname,
   wsPort: 6001,
   transports: ["websocket"],
-  withCredentials: true
+  withCredentials: true,
+  auth: {
+    headers: {
+      Authorization: 'Bearer ' + "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FsYmlvbi1vdmVybGF5LnJ1L2FwaS9sb2dpbiIsImlhdCI6MTcwNDY3NTEwOSwiZXhwIjoxNzA0Njc4NzA5LCJuYmYiOjE3MDQ2NzUxMDksImp0aSI6IkpnelQxTDdGMW9teFpJc1oiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.lvqSZRf8jnpXNmr0K6RV_puCyoPKzRSLDwJxEf2ByU0",
+    },
+  },
 });
 
 window.Echo.channel(`laravel_database_translation`)
 .listen('.App\\Events\\TranslationEvent', (e) => {
   console.log(e)
 })
+
+
+window.Echo.join('laravel_database_test.1')
+    .here((users) => {
+        console.log('Users currently in the channel:', users);
+    })
+    .joining((user) => {
+        console.log('User joining the channel:', user);
+    })
+    .leaving((user) => {
+        console.log('User leaving the channel:', user);
+    });
 
 console.log(window.Echo)
 
