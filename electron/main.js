@@ -38,7 +38,7 @@ ipcMain.on('updatePanels', (event, newPanels) => {
 });
 
 const panels = [];
-function createWindow () {
+function createOverlay () {
   var newWindow = new BrowserWindow({
     name: `AttachableWindow`,
     title: "albion-overlay",
@@ -99,7 +99,7 @@ function createWindow () {
 
 app.whenReady().then(() => {
   createMainWindow(); // main window
-  createWindow(); // overlay
+  createOverlay(); // overlay
   
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()

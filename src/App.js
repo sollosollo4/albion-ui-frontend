@@ -1,7 +1,6 @@
 import './App.css';
 import React, { Component } from 'react';
-import PanelCreator from './PanelCreator/PanelCreator';
-
+import RoomCheckForm from './components/RoomCheckForm';
 const electron = window.require('electron');
 
 electron.ipcRenderer.on('focus-change', (e, state) => {
@@ -16,25 +15,44 @@ electron.ipcRenderer.on('visibility-change', (e, state) => {
 });
 
 class App extends Component {
+  state = {
+    roomId: null
+  }
+
+  handleFormSubmit = (roomId) => {
+    this.setState({ roomId: roomId }, () => {
+      this.joinEchoChannel();
+    });
+    console.log(roomId);
+  };
+
+  joinEchoChannel = () => {
+    const { roomId } = this.state;
+    window.Echo.join('laravel_database-room.'+roomId)
+    .here((users) => {
+      console.log('Users currently in the channel:', users);
+    })
+    .joining((user) => {
+      console.log('User joining the channel:', user);
+    })
+    .leaving((user) => {
+      console.log('User leaving the channel:', user);
+    })
+    .listen('.App\\Events\\TranslationEvent', (e) => {
+      console.log(e)
+    });
+    console.log(window.Echo)
+  }
+
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <br /><span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span>
-          <br /><span><b>Ctrl + K</b> чтобы скрыть все панели</span>
-          <br />
-          Создайте или присоединитесь к существующей комнате
-          <form className='roomForm'>
-            <label for="room">id комнаты</label>
-            <input type="text" name="room" />
-            <label for="room">пароль</label>
-            <input type="password" name="password" />
-            <button>Создать</button>
-            <button>Войти</button>
-          </form>
-        </header>
-        <main>
-
+        <main><br />
+          <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
+          <span><b>Ctrl + K</b> чтобы скрыть все панели</span>
+          <br /><br />
+          Создайте или присоединитесь к существующей комнате<br />
+          <RoomCheckForm onFormSubmit={this.handleFormSubmit} ></RoomCheckForm>
         </main>
       </div>
     );
