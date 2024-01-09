@@ -1,5 +1,5 @@
 import './style.css';
-import React, { useState, useEffect, useRef  } from 'react';
+import React, { useState, useRef  } from 'react';
 import PanelContent from './PanelContent'
 
 const DraggablePanel = ({ color, position }) => {

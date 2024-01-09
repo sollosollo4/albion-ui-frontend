@@ -16,7 +16,7 @@ const Dropdown = ({ options, onSelect }) => {
       <div className="selected-item" onClick={() => setIsOpen(!isOpen)}>
         {selectedItem ? (
           <>
-            <img src={selectedItem.image} alt={`Image for ${selectedItem.label}`} className="selected-image" />
+            <img src={selectedItem.image} className="selected-image" />
             {selectedItem.label}
           </>
         ) : (
@@ -27,7 +27,7 @@ const Dropdown = ({ options, onSelect }) => {
         <ul className="options-list">
           {options.map((option) => (
             <li key={option.value} onClick={() => handleSelect(option)}>
-              <img src={option.image} alt={`Image for ${option.label}`} className="option-image" />
+              <img src={option.image} className="option-image" />
               {option.label}
             </li>
           ))}

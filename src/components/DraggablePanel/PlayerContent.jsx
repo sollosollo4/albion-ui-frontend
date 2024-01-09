@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './PlayerContent.css';
-import PlayerClassDropDown from './PlayerClass/PlayerClassDropDown';
 
 const PlayerContent = () => {
     const [selectedItem, setSelectedItem] = useState(null);

@@ -11,11 +11,11 @@ function createMainWindow() {
   const mainWindow = new BrowserWindow({
     name: "Albion-UI",
     title: "Albion-UI",
-    width: 400,
-    height: 400,
+    width: 1200,
+    height: 800,
     frame: true,
     autoHideMenuBar: true,
-    resizable: false,
+    resizable: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false

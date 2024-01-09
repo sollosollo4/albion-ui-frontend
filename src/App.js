@@ -1,11 +1,14 @@
 import './App.css';
 import React, { Component } from 'react';
 import RoomCheckForm from './components/RoomCheckForm';
-const electron = window.require('electron');
+import Echo from 'laravel-echo';
+import ModalWindow from './components/ModalWindow/ModalWindow';
+import RegisterForm from './components/RegisterForm';
+import axios from 'axios';
 
+const electron = window.require('electron');
 electron.ipcRenderer.on('focus-change', (e, state) => {
 });
-
 electron.ipcRenderer.on('visibility-change', (e, state) => {
   if (document.body.style.display) {
     document.body.style.display = null
@@ -14,21 +17,66 @@ electron.ipcRenderer.on('visibility-change', (e, state) => {
   }
 });
 
+
 class App extends Component {
-  state = {
-    roomId: null
+  constructor(props) {
+    super(props);
+    this.state = {
+      isModalOpen: false,
+      roomId: null,
+      Auth: null
+    };
   }
 
-  handleFormSubmit = (roomId) => {
-    this.setState({ roomId: roomId }, () => {
-      this.joinEchoChannel();
-    });
-    console.log(roomId);
+  openModal = () => {
+    this.setState({ isModalOpen: true });
   };
 
+  closeModal = () => {
+    this.setState({ isModalOpen: false });
+  };
+
+  handleFormSubmit = (roomId) => {
+    console.log("Connect to room:" + roomId);
+    this.setState({ roomId: roomId });
+    // show login form
+    this.setState({ isModalOpen: true });
+  };
+
+  handleRegisterFormSubmit = (response) => {
+    console.log(response);
+    this.setState({ Auth: response.data }, () => {
+      this.joinEchoChannel();
+    });
+  }
+
   joinEchoChannel = () => {
-    const { roomId } = this.state;
-    window.Echo.join('laravel_database-room.'+roomId)
+    const { roomId, Auth } = this.state;
+    console.log(roomId, Auth)
+
+    const laravelEcho = new Echo({
+      cluster: "mt1",
+      broadcaster: 'pusher',
+      appId: "app-id",
+      key: "app-key",
+      secret: "app-secret",
+      wsHost: "albion-overlay.ru",
+      wsPort: "6001",
+      wssPort: "6002",
+      forceTLS: false,
+      encrypted: true,
+      disableStats: true,
+      enabledTransports: ['ws', 'wss'],
+      withCredentials: true,
+      authEndpoint: 'https://albion-overlay.ru/api/broadcasting/auth',
+      auth: {
+        headers: {
+          Authorization: 'Bearer ' + Auth.access_token,
+        },
+      }
+    });
+
+    laravelEcho.join('room.' + roomId)
     .here((users) => {
       console.log('Users currently in the channel:', users);
     })
@@ -37,22 +85,33 @@ class App extends Component {
     })
     .leaving((user) => {
       console.log('User leaving the channel:', user);
+    }).listen('PressButtonEvent', (e) => {
+      console.log("SOME PLAYER IN ROOM PRESS BUTTON")
+      console.log(e)
     })
-    .listen('.App\\Events\\TranslationEvent', (e) => {
+    .listen('ProfileDataEvent', (e) => {
+      console.log("SOME PLAYER IN ROOM SEND NEW PROFILE DATA")
       console.log(e)
     });
-    console.log(window.Echo)
-  }
+
+    console.log(laravelEcho)
+  };
 
   render() {
+    const { isModalOpen, roomId, Auth } = this.state;
     return (
       <div className="App">
-        <main><br />
-          <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
-          <span><b>Ctrl + K</b> чтобы скрыть все панели</span>
-          <br /><br />
-          Создайте или присоединитесь к существующей комнате<br />
-          <RoomCheckForm onFormSubmit={this.handleFormSubmit} ></RoomCheckForm>
+        <main>
+          {roomId == null || Auth == null ? (
+            <div>
+              <RoomCheckForm onFormSubmit={this.handleFormSubmit} ></RoomCheckForm>
+              <ModalWindow isModalOpen={isModalOpen} closeModal={this.closeModal}>
+                <RegisterForm onFormSubmit={this.handleRegisterFormSubmit} closeModal={this.closeModal} />
+              </ModalWindow>
+            </div>
+          ) : (
+            <div>RoomId: {roomId}</div>
+          )}
         </main>
       </div>
     );
