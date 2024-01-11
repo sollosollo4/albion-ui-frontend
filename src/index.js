@@ -7,34 +7,6 @@ import Overlay from './Overlay/Overlay';
 import App from './App';
 
 window.Pusher = require('pusher-js');
-/*
-// Join public
-window.Echo.channel(`translation`)
-  .listen('TranslationEvent', (e) => {
-    console.log('Public channel event: laravel_database_translation')
-    console.log(e)
-  })
-
-// Join private
-window.Echo.join('test')
-  .here((users) => {
-    console.log('Users currently in the channel:', users);
-  })
-  .joining((user) => {
-    console.log('User joining the channel:', user);
-  })
-  .leaving((user) => {
-    console.log('User leaving the channel:', user);
-  })
-  .listen('TranslationEvent', (e) => {
-    console.log('Private channel event: laravel_database_test')
-    console.log(e)
-  });
-window.Echo.private('laravel_database_test')
-.listen('.App\\Events\\TranslationEvent', (e) => {
-  console.log('Private channel event: laravel_database_test')
-  console.log(e) 
-});*/
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -42,7 +14,7 @@ root.render(
     <HashRouter>
       <Routes>
         <Route exact path="/" element={<App />} />
-        <Route exact sensitive path="/newWindow" element={<Overlay />} />
+        <Route exact sensitive path="/overlayWindow" element={<Overlay />} />
       </Routes>
     </HashRouter>
   </React.StrictMode>

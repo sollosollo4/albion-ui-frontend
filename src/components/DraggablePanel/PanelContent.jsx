@@ -28,6 +28,10 @@ const PanelContent = ({ onColor, onTransparency, onTextColor }) => {
         onTransparency(parseFloat(event.target.value));
     };
 
+    const handlePlayerSelect = (event) => {
+        
+    }
+
     return (
         <div className="tabs-container">
             <div className="tab-header">
@@ -48,7 +52,7 @@ const PanelContent = ({ onColor, onTransparency, onTextColor }) => {
                 {activeTab === 1 && <div>
                     <form>
                         <div>
-                            <label htmlFor="colorPicker">Choose a Color:</label>
+                            <label htmlFor="colorPicker">Цвет панели:</label>
                             <input
                                 type="color"
                                 id="colorPicker"
@@ -59,7 +63,7 @@ const PanelContent = ({ onColor, onTransparency, onTextColor }) => {
                         </div>
 
                         <div>
-                            <label htmlFor="colorPicker">Choose a Text Color:</label>
+                            <label htmlFor="colorPicker">Цвет текста:</label>
                             <input
                                 type="color"
                                 id="colorTextPicker"
@@ -69,7 +73,7 @@ const PanelContent = ({ onColor, onTransparency, onTextColor }) => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="transparencySlider">Adjust Transparency:</label>
+                            <label htmlFor="transparencySlider">Прозрачность:</label>
                             <input
                                 type="range"
                                 id="transparencySlider"
@@ -81,11 +85,16 @@ const PanelContent = ({ onColor, onTransparency, onTextColor }) => {
                                 onChange={handleTransparencyChange}
                             />
                         </div>
+
+                        <label>Выбрать игрока</label>
+                        <select className="selectDropdown" onChange={handlePlayerSelect}>
+                            <option value="">Choose Player</option>
+                        </select>
                     </form>
                 </div>}
                 {activeTab === 2 && <div>
-                    <PlayerContent/>
-                    </div>}
+                    <PlayerContent />
+                </div>}
             </div>
         </div>
     );

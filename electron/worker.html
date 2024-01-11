@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <title>WORKER</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</header>
+<body></body>
+<script>
+    const electron = require('electron');
+    const ipcRenderer = electron.ipcRenderer;
+    
+    var turn, roomId, AuthToken;
+    ipcRenderer.on('worker', function (event, data) {
+        data.turn ? ipcRenderer.on('send-buffer', handleBuffer) : ipcRenderer.remove('send-buffer', handleBuffer);
+        roomId = data.roomId;
+        AuthToken = data.auth;
+    });
+
+    ipcRenderer.on('worker', function (event, worker) {
+        !worker ? ipcRenderer.remove('send-buffer', handleBuffer) : ipcRenderer.on('send-buffer', handleBuffer);
+    });
+
+    function handleBuffer (event, buffers) {
+        console.log(buffers)
+
+        axios.post(`https://albion-overlay.ru/api/rooms/${roomId}/sendPressButtonEvent`, {
+            buffers: buffers
+        }, {
+            withCredentials: true,
+            headers: {
+                'Authorization': `Bearer ${AuthToken}`,
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                console.log(response)
+            })
+            .catch(error => {
+            });
+    }
+</script>
+
+</html>

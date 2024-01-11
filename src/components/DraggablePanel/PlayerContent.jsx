@@ -36,11 +36,7 @@ const PlayerContent = () => {
         <div style={{ display: 'flex' }}>
             {/* Левая часть - Выпадающий список */}
             <div style={{ marginRight: '20px' }}>
-                <label>Choose Player</label>
-                <select className="selectDropdown" value={selectedItem ? selectedItem.value : ''} onChange={handleSelect}>
-                    <option value="">Choose Player</option>
-                    <option value="item1">Item 1</option>
-                </select>
+                
                 {
                     selectedItem && (
                         <div>

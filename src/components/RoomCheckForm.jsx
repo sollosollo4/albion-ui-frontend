@@ -27,6 +27,7 @@ const RoomCheckForm = ({ onFormSubmit }) => {
     <div><br />
       <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
       <span><b>Ctrl + K</b> чтобы скрыть все панели</span>
+      <span><b>Ctrl + Shift + B</b> чтобы настроить интерфейс(без лагов)</span>
       <br /><br />
       Создайте или присоединитесь к существующей комнате<br />
       <form onSubmit={handleSubmit} className='roomForm' onChange={handleChange}>

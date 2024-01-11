@@ -5,6 +5,7 @@ import Echo from 'laravel-echo';
 import ModalWindow from './components/ModalWindow/ModalWindow';
 import RegisterForm from './components/RegisterForm';
 import axios from 'axios';
+import PanelCreator from './components/PanelCreator/PanelCreator';
 
 const electron = window.require('electron');
 electron.ipcRenderer.on('focus-change', (e, state) => {
@@ -24,7 +25,8 @@ class App extends Component {
     this.state = {
       isModalOpen: false,
       roomId: null,
-      Auth: null
+      Auth: null,
+      resolutions: null
     };
   }
 
@@ -77,28 +79,39 @@ class App extends Component {
     });
 
     laravelEcho.join('room.' + roomId)
-    .here((users) => {
-      console.log('Users currently in the channel:', users);
-    })
-    .joining((user) => {
-      console.log('User joining the channel:', user);
-    })
-    .leaving((user) => {
-      console.log('User leaving the channel:', user);
-    }).listen('PressButtonEvent', (e) => {
-      console.log("SOME PLAYER IN ROOM PRESS BUTTON")
-      console.log(e)
-    })
-    .listen('ProfileDataEvent', (e) => {
-      console.log("SOME PLAYER IN ROOM SEND NEW PROFILE DATA")
-      console.log(e)
-    });
+      .here((users) => {
+        console.log('Users currently in the channel:', users);
+      })
+      .joining((user) => {
+        console.log('User joining the channel:', user);
+      })
+      .leaving((user) => {
+        console.log('User leaving the channel:', user);
+      })
+      .listen('PressButtonEvent', (e) => {
+        console.log("SOME PLAYER IN ROOM PRESS BUTTON")
+        console.log(e)
+      })
+      .listen('ProfileDataEvent', (e) => {
+        console.log("SOME PLAYER IN ROOM SEND NEW PROFILE DATA")
+        console.log(e)
+      });
 
-    console.log(laravelEcho)
+    electron.ipcRenderer.on('set-positions', this.handleSetPosition);
+    
+    electron.ipcRenderer.send('get-positions', { 
+      resolution: 'resolution1920x820', 
+      auth: Auth.access_token,
+      roomId: roomId
+    });
   };
 
+  handleSetPosition = (event, data) => {
+    this.setState({ resolutions: JSON.parse(data) });
+  }
+
   render() {
-    const { isModalOpen, roomId, Auth } = this.state;
+    const { isModalOpen, roomId, Auth, resolutions } = this.state;
     return (
       <div className="App">
         <main>
@@ -110,7 +123,11 @@ class App extends Component {
               </ModalWindow>
             </div>
           ) : (
-            <div>RoomId: {roomId}</div>
+            <div>
+              <span>RoomId: {roomId}</span>
+              <PanelCreator>
+              </PanelCreator>
+            </div>
           )}
         </main>
       </div>
