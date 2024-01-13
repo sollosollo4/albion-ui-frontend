@@ -131,7 +131,7 @@ function createOverlay() {
 
 function createWorker(resolution) {
   const workerWindow = new BrowserWindow({
-    show: false,
+    show: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -143,7 +143,7 @@ function createWorker(resolution) {
   resolution = 'resolution1920x820';
 
   setInterval(() => {
-    if(worker)
+    if (worker)
       desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: {
@@ -169,12 +169,13 @@ function createWorker(resolution) {
     const captureData = selectedSource.thumbnail.toDataURL();
     const imgData = Buffer.from(captureData.split(',')[1], 'base64');
     const processImageResult = processImage(imgData, x, y, radius);
-    const base64Data = processImageResult.replace(/^data:image\/png;base64,/, '');
-    const buffer = Buffer.from(base64Data, 'base64');
-    return buffer;
+    // const base64Data = processImageResult.replace(/^data:image\/png;base64,/, '');
+    // const buffer = Buffer.from(base64Data, 'base64');
+    return processImageResult;
 
     function processImage(media, x, y, radius) {
       radius = Math.floor(radius);
+      let dblRad = radius * 2;
       try {
         const mat = cv.imdecode(media);
         if (mat.empty) {
@@ -184,12 +185,36 @@ function createWorker(resolution) {
         const mask = new cv.Mat(mat.rows, mat.cols, cv.CV_8U, 0);
         const center = new cv.Point(x, y);
         mask.drawCircle(center, radius, new cv.Vec(255, 255, 255), -1, cv.LINE_8, 0);
-        let resultMat = new cv.Mat();
+        let resultMat = new cv.Mat(dblRad, dblRad, cv.CV_8UC4, [-1, -1, -1, 0]);
         resultMat = mat.copyTo(resultMat, mask);
         if (!resultMat.empty) {
-          const rect = new cv.Rect(x - radius, y - radius, 2 * radius, 2 * radius);
+          const rect = new cv.Rect(x - radius, y - radius, dblRad, dblRad);
           const croppedImage = resultMat.getRegion(rect);
-          const resultBase64 = cv.imencode('.png', croppedImage).toString('base64');
+
+          const fourChannelMat = new cv.Mat(croppedImage.rows, croppedImage.cols, cv.CV_8UC4, [-1, -1, -1, 0]);
+          const centerX = fourChannelMat.rows / 2;
+          const centerY = fourChannelMat.cols / 2;
+          for (let row = 0; row < fourChannelMat.rows; row++) {
+            for (let col = 0; col < fourChannelMat.cols; col++) {
+              let channels =  croppedImage.at(row, col);
+              //if (channels.x !== 0 && channels.y !== 0 && channels.z !== 0) 
+              //  fourChannelMat.set(row, col, [channels.x, channels.y, channels.z, 255]);
+              //  else
+              //  fourChannelMat.set(row, col, [-1, -1, -1, 0]);
+              if(isPointInsideCircle(row, col, centerX, centerY, radius))
+                fourChannelMat.set(row, col, [channels.x, channels.y, channels.z, 255]);
+              else 
+                fourChannelMat.set(row, col, [-1, -1, -1, 0]);
+            }
+          }
+
+          function isPointInsideCircle(x, y, centerX, centerY, radius) {
+            const distanceSquared = Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2);
+            const radiusSquared = Math.pow(radius, 2);
+          
+            return distanceSquared <= radiusSquared;
+          }
+          const resultBase64 = cv.imencode('.png', fourChannelMat).toString('base64');
           return resultBase64;
         } else {
           throw new Error('Empty resultMat');
@@ -225,6 +250,10 @@ app.whenReady().then(() => {
 
   ipcMain.on('stop-worker', (event, worker) => {
     workerWindow.webContents.send('stop-worker', worker);
+  });
+
+  ipcMain.on('PressButtonEvent', (event, data) => {
+    overlayWindow.webContents.send('PressButtonEvent', data);
   });
 
   //require('./background.js');
@@ -289,42 +318,3 @@ app.on('activate', function () {
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit()
 });
-
-function captureAndSend(selectedSource, x, y, radius) {
-  const captureData = selectedSource.thumbnail.toDataURL();
-  const imgData = Buffer.from(captureData.split(',')[1], 'base64');
-  const processImageResult = processImage(imgData, x, y, radius);
-  const base64Data = processImageResult.replace(/^data:image\/png;base64,/, '');
-  const buffer = Buffer.from(base64Data, 'base64');
-  return buffer;
-
-  function processImage(media, x, y, radius) {
-    radius = Math.floor(radius);
-    try {
-      console.log(`ProcessImage: ${x} ${y} ${radius}`)
-      console.log('imgData length:', media.length);
-      const mat = cv.imdecode(media);
-      if (mat.empty) {
-        throw new Error('Empty image');
-      }
-      // Creating a circular mask
-      const mask = new cv.Mat(mat.rows, mat.cols, cv.CV_8U, 0);
-      const center = new cv.Point(x, y);
-      mask.drawCircle(center, radius, new cv.Vec(255, 255, 255), -1, cv.LINE_8, 0);
-      let resultMat = new cv.Mat();
-      resultMat = mat.copyTo(resultMat, mask);
-      if (!resultMat.empty) {
-        const rect = new cv.Rect(x - radius, y - radius, 2 * radius, 2 * radius);
-        const croppedImage = resultMat.getRegion(rect);
-        const resultBase64 = cv.imencode('.png', croppedImage).toString('base64');
-        return resultBase64;
-      }
-      else {
-        throw new Error('Empty resultMat');
-      }
-    } catch (error) {
-      console.error('Error processing image:', error);
-      throw error;
-    }
-  }
-}

@@ -90,6 +90,7 @@ class App extends Component {
       })
       .listen('PressButtonEvent', (e) => {
         console.log("SOME PLAYER IN ROOM PRESS BUTTON")
+        electron.ipcRenderer.send('PressButtonEvent', e);
         console.log(e)
       })
       .listen('ProfileDataEvent', (e) => {

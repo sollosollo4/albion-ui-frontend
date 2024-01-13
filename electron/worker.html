@@ -4,7 +4,11 @@
     <title>WORKER</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </header>
-<body></body>
+<body>
+    <div id="imageContainer">
+
+    </div>
+</body>
 <script>
     const electron = require('electron');
     const ipcRenderer = electron.ipcRenderer;
@@ -21,8 +25,6 @@
     });
 
     function handleBuffer (event, buffers) {
-        console.log(buffers)
-
         axios.post(`https://albion-overlay.ru/api/rooms/${roomId}/sendPressButtonEvent`, {
             buffers: buffers
         }, {
@@ -33,7 +35,7 @@
             },
         })
             .then(response => {
-                console.log(response)
+                //console.log(response)
             })
             .catch(error => {
             });

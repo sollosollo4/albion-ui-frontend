@@ -1,9 +1,11 @@
 {
   "name": "albion-ui",
-  "version": "0.1.0",
+  "author": "sollosollo4",
+  "description": "Albion overlay for monitoring friendly cooldowns",
+  "version": "0.0.9",
   "private": true,
-  "main": "electron/main.js",
-  "productName": "Albion-UI",
+  "main": "electron/electron.js",
+  "productName": "AlbionOverlay",
   "homepage": "./",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
