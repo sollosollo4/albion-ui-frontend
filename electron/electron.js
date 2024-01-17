@@ -33,10 +33,9 @@ exports.data_resolution_coords = data_resolution_coords;
 
 const toggleMouseKey = 'CmdOrCtrl + J'
 const toggleShowKey = 'CmdOrCtrl + K'
-const stopWorker = 'CmdOrCtrl + Shift + B'
+const stopWorkerKey = 'CmdOrCtrl + Shift + B'
 
 var panels = [];
-
 function createMainWindow() {
   const mainWindow = new BrowserWindow({
     name: "Albion-UI",
@@ -121,9 +120,8 @@ function createOverlay() {
   globalShortcut.register(toggleShowKey, () => {
     overlayWindow.webContents.send('visibility-change', false)
   });
-  globalShortcut.register(stopWorker, () => {
+  globalShortcut.register(stopWorkerKey, () => {
     worker = !worker;
-    overlayWindow.webContents.send('stop-worker', worker)
   });
 
   return overlayWindow;
@@ -131,39 +129,53 @@ function createOverlay() {
 
 function createWorker(resolution) {
   const workerWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      nodeIntegrationInWorker: true
     },
   });
   workerWindow.loadURL(__dirname + "/worker.html");
   workerWindow.webContents.openDevTools();
 
+  const Worker = require('worker_threads').Worker;
+  const workerJs = new Worker(__dirname + '/worker.js', { data: 1 });
+  ipcMain.on('set-auth', (event, data) => {
+    workerJs.postMessage({ 
+      type: 'worker', 
+      authToken: data.authToken,
+      roomId: data.roomId
+    });
+    immediatlyCapture();
+  });
   resolution = 'resolution1920x820';
-
   setInterval(() => {
-    if (worker)
-      desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: {
-          width: 1920,
-          height: 1080
-        }
-      }).then(sources => {
-        const selectedSource = sources[0];
-        if (selectedSource) {
-          let buffers = [];
-          data_resolution_coords[resolution].coords.forEach(function (elem, index) {
-            let buffer = captureAndSend(selectedSource, elem.x, elem.y, elem.r);
-            buffers[index] = buffer;
-          });
-          workerWindow.webContents.send('send-buffer', buffers);
-        }
-      }).catch(e => {
-        console.log("Error:" + e)
+    if (!isInteractable)
+      immediatlyCapture();
+  }, 500);
+
+  function immediatlyCapture() {
+    desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: {
+        width: 1920,
+        height: 1080, 
+      }
+    })
+    .then(sources => {
+      const selectedSource = sources[0];
+      const captureData = selectedSource.thumbnail.toDataURL();
+      const imgData = Buffer.from(captureData.split(',')[1], 'base64');
+      workerJs.postMessage({ 
+        type: 'screenshot', 
+        data: imgData 
       });
-  }, 1000);
+    })
+    .catch(e => {
+      console.log("Error:" + e)
+    });
+  }
 
   function captureAndSend(selectedSource, x, y, radius) {
     const captureData = selectedSource.thumbnail.toDataURL();
@@ -197,10 +209,6 @@ function createWorker(resolution) {
           for (let row = 0; row < fourChannelMat.rows; row++) {
             for (let col = 0; col < fourChannelMat.cols; col++) {
               let channels =  croppedImage.at(row, col);
-              //if (channels.x !== 0 && channels.y !== 0 && channels.z !== 0) 
-              //  fourChannelMat.set(row, col, [channels.x, channels.y, channels.z, 255]);
-              //  else
-              //  fourChannelMat.set(row, col, [-1, -1, -1, 0]);
               if(isPointInsideCircle(row, col, centerX, centerY, radius))
                 fourChannelMat.set(row, col, [channels.x, channels.y, channels.z, 255]);
               else 
@@ -241,72 +249,15 @@ app.whenReady().then(() => {
 
   ipcMain.on('get-positions', (event, data) => {
     workerWindow.webContents.send('worker', {
-      turn: true,
       auth: data.auth,
       roomId: data.roomId
     });
     mainWindow.webContents.send('set-positions', JSON.stringify(data_resolution_coords));
   });
 
-  ipcMain.on('stop-worker', (event, worker) => {
-    workerWindow.webContents.send('stop-worker', worker);
-  });
-
   ipcMain.on('PressButtonEvent', (event, data) => {
     overlayWindow.webContents.send('PressButtonEvent', data);
   });
-
-  //require('./background.js');
-  function getCirclePositions(templatePath, screenShootPath, threshold = 0.45) {
-    const templateImage = cv.imread(templatePath);
-    const screenshot = cv.imread(screenShootPath);
-
-    const match = screenshot.matchTemplate(templateImage, 5);
-
-    const locations = [];
-    const minDistance = 10;
-
-    const startY = 800;
-    const endY = 1400;
-
-    for (let y = startY; y < endY && y < match.rows; y++) {
-      for (let x = 0; x < match.cols; x++) {
-        const matchVal = match.atRaw(y, x);
-        if (matchVal >= threshold) {
-          const currentLocation = new cv.Point(x, y);
-
-          // Проверка, находится ли текущее совпадение достаточно далеко от ранее найденных
-          const isFarEnough = locations.every((prevLocation) => {
-            const distance = Math.sqrt(
-              Math.pow(currentLocation.x - prevLocation.x, 2) +
-              Math.pow(currentLocation.y - prevLocation.y, 2)
-            );
-            return distance >= minDistance;
-          });
-
-          if (isFarEnough) {
-            locations.push(currentLocation);
-          }
-        }
-      }
-    }
-    // Отобразите прямоугольники вокруг найденных совпадений
-    locations.forEach(loc => {
-      const startX = loc.x;
-      const startY = loc.y;
-      screenshot.drawCircle(
-        new cv.Point(startX / 2, startY / 2), // Центр круга
-        (25), // Радиус круга (можно использовать половину ширины шаблона)
-        new cv.Vec(0, 255, 0), // Цвет (зеленый в формате BGR)
-        2, // Толщина линии
-        cv.LINE_8
-      );
-    });
-
-    // Сохраните изображение с отмеченным совпадением
-    //cv.imwrite(__dirname + '/rawSkillPatterns/result.png', screenshot);
-    return locations;
-  }
 }).catch((echo) => {
   console.log(echo);
 });

@@ -14,13 +14,8 @@ class Overlay extends Component {
   };
 
   componentDidMount() {
-    electron.ipcRenderer.on('stop-worker', this.handlerStopWorker);
     electron.ipcRenderer.on('panels-data', this.handlePanelsData);
   }
-
-  handlerStopWorker = (event, worker) => {
-    electron.ipcRenderer.send('stop-worker', worker)
-  }; 
 
   handlePanelsData = (event, receivedPanels) => {
     this.setState(() => ({
@@ -32,7 +27,6 @@ class Overlay extends Component {
     const { panels } = this.state;
     return (
       <div className="Overlay">
-        {/* <MouseTracker /> */}
         <div className='all_panels'>
           {panels.map((panel, index) => (
             <DraggablePanel key={index} color={panel.color} position={panel.position} />

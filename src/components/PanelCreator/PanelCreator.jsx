@@ -1,39 +1,46 @@
-import React, { useState } from 'react';
-
+import React, { Component } from 'react';
 const electron = window.require('electron');
 
-const PanelCreator = () => {
-  const [panels, setPanels] = useState([]);
-  const [currentColor, setCurrentColor] = useState('lightblue');
+class PanelCreator extends Component {
+  constructor(props) {
+    super(props);
 
-  const handleCreatePanel = () => {
+    this.state = {
+      panels: [],
+      currentColor: 'lightblue',
+    };
+  }
+
+  handleCreatePanel = () => {
+    const { currentColor } = this.state;
+
     const newPanel = {
       color: currentColor,
       position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
     };
 
-    setPanels((prevPanels) => {
-      const updatedPanels = [...prevPanels, newPanel];
+    this.setState((prevState) => {
+      const updatedPanels = [...prevState.panels, newPanel];
       electron.ipcRenderer.send('panels-data', updatedPanels);
-      return updatedPanels;
+      return { panels: updatedPanels };
     });
   };
 
-  const handleSetColor = (color) => {
-    setCurrentColor(color);
-  };
+  render() {
+    const { currentColor } = this.state;
 
-  return (
-    <div id='creator'>
-      <h2>Создание панели</h2>
-      <button onClick={handleCreatePanel}>Создать панель</button>
-      <input
-        type="color"
-        value={currentColor}
-        onChange={(e) => handleSetColor(e.target.value)}
-      />
-    </div>
-  );
-};
+    return (
+      <div id='creator'>
+        <h2>Создание панели</h2>
+        <button onClick={this.handleCreatePanel}>Создать панель</button>
+        <input
+          type="color"
+          value={currentColor}
+          onChange={(e) => this.handleSetColor(e.target.value)}
+        />эот 
+      </div>
+    );
+  }
+}
 
 export default PanelCreator;

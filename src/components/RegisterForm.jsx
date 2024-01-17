@@ -25,7 +25,6 @@ class RegisterForm extends React.Component {
     }, {withCredentials: true})
     .then(response => {
       const cookies = response.headers['set-cookie'];
-      console.log(cookies)
       /*const cookieArray = cookies.split(';');
       cookieArray.forEach(cookie => {
         document.cookie = cookie.trim();

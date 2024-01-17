@@ -17,6 +17,18 @@ class PanelContent extends Component {
         };
     }
 
+    componentDidMount() {
+        electron.ipcRenderer.on('PressButtonEvent', this.handleButtonsData);
+    }
+
+    handleButtonsData = (event, data) => {
+        const urls = data.pressButtonData.buffers.map((buffer, index) => {
+            let url = `data:image/png;base64,${buffer}`
+            return { url, index };
+        });
+        this.setState({ imageUrls: urls });
+    }
+
     handleTabClick = (tabIndex) => {
         this.setState({ activeTab: tabIndex });
     };
@@ -38,24 +50,7 @@ class PanelContent extends Component {
         this.setState({ transparency });
         this.props.onTransparency(transparency);
     };
-
-    componentDidMount() {
-        electron.ipcRenderer.on('PressButtonEvent', this.handleButtonsData);
-    }
-
-    handleButtonsData = (event, data) => {
-        const urls = data.pressButtonData.buffers.map((buffer, index) => {
-            let url = `data:image/png;base64,${buffer}`
-            return { url, index };
-        });
-
-        this.setState({ imageUrls: urls });
-    }
-
-    handlePlayerSelect = (event) => {
-
-    };
-
+    
     render() {
         const { activeTab, color, textcolor, transparency, imageUrls } = this.state;
 
@@ -112,10 +107,6 @@ class PanelContent extends Component {
                                         onChange={this.handleTransparencyChange}
                                     />
                                 </div>
-                                <label>Выбрать игрока</label>
-                                <select className="selectDropdown" onChange={this.handlePlayerSelect}>
-                                    <option value="">Choose Player</option>
-                                </select>
                             </form>
                         </div>
                     )}

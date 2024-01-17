@@ -6,6 +6,7 @@ import ModalWindow from './components/ModalWindow/ModalWindow';
 import RegisterForm from './components/RegisterForm';
 import axios from 'axios';
 import PanelCreator from './components/PanelCreator/PanelCreator';
+import PlayerInRoom from './components/PlayerInRoom/PlayerInRoom';
 
 const electron = window.require('electron');
 electron.ipcRenderer.on('focus-change', (e, state) => {
@@ -111,11 +112,31 @@ class App extends Component {
     this.setState({ resolutions: JSON.parse(data) });
   }
 
+  handleSetColor = (color) => {
+    this.setState({ currentColor: color });
+  };
+
+  handleLightToggle = () => {
+    this.setState((prevState) => ({ lightOn: !prevState.lightOn }));
+  };
+
+  handleSwitchToggle = (index) => {
+    this.setState((prevState) => {
+      const newSwitches = [...prevState.switches];
+      newSwitches[index] = !newSwitches[index];
+      return { switches: newSwitches };
+    });
+  };
+
   render() {
     const { isModalOpen, roomId, Auth, resolutions } = this.state;
     return (
       <div className="App">
         <main>
+        <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
+        <span><b>Ctrl + K</b> чтобы скрыть все панели</span><br />
+        <span><b>Ctrl + Shift + B</b> переключить Albion сканнер</span>
+        <br />
           {roomId == null || Auth == null ? (
             <div>
               <RoomCheckForm onFormSubmit={this.handleFormSubmit} ></RoomCheckForm>
@@ -128,6 +149,14 @@ class App extends Component {
               <span>RoomId: {roomId}</span>
               <PanelCreator>
               </PanelCreator>
+              <div>
+      <PlayerInRoom 
+        roomName="Player1"
+      ></PlayerInRoom>
+       <PlayerInRoom 
+        roomName="Player2"
+      ></PlayerInRoom>
+      </div>
             </div>
           )}
         </main>

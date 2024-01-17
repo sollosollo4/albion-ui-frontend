@@ -1,0 +1,33 @@
+.roomBlock {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px;
+    width: calc(33.3333% - 20px);
+}
+
+.lightIndicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 10px auto;
+    cursor: pointer;
+}
+
+.lightIndicator.on {
+    background-color: green;
+}
+
+.lightIndicator.off {
+    background-color: red;
+}
+
+.switchTable {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.switchCell {
+    text-align: center;
+    margin-top: 10px;
+}
