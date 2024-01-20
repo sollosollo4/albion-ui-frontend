@@ -1,4 +1,4 @@
-const { parentPort, workerData } = require('worker_threads');
+const { parentPort } = require('worker_threads');
 const cv = require('@u4/opencv4nodejs');
 
 const axios = require('axios');
@@ -100,25 +100,21 @@ function intervalWorker(imgData, roomId, authToken) {
             'Content-Type': 'application/json',
         },
     })
-    .then(response => {
-        console.log("buffers sended: "+Math.floor(Date().getTime() / 1000));
-    })
-    .catch(error => {
-    });
+        .then(response => {
+            console.log("buffers sended: " + Math.floor(Date().getTime() / 1000));
+        })
+        .catch(error => {
+        });
 }
+// Start Immediatly and working all time
+setInterval(() => {
+    parentPort.postMessage({
+        type: 'get-screenshot'
+    });
+}, 500);
 
-var isWorkGo = false;
-var authToken = null;
-var roomId = null;
 parentPort.on('message', message => {
-    if (message.type === 'screenshot'
-        && authToken !== null 
-        && roomId !== null) {
-        intervalWorker(message.data, roomId, authToken);
-    }
-
-    if(message.type == 'worker') {
-        authToken = message.authToken;
-        roomId = message.roomId;
+    if (message.type === 'set-screenshot') {
+        intervalWorker(message.data, message.roomId, message.authToken);
     }
 });

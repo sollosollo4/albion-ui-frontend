@@ -141,22 +141,33 @@ function createWorker(resolution) {
 
   const Worker = require('worker_threads').Worker;
   const workerJs = new Worker(__dirname + '/worker.js', { data: 1 });
-  ipcMain.on('set-auth', (event, data) => {
-    workerJs.postMessage({ 
-      type: 'worker', 
-      authToken: data.authToken,
-      roomId: data.roomId
-    });
-    immediatlyCapture();
-  });
-  resolution = 'resolution1920x820';
-  setInterval(() => {
-    if (!isInteractable)
-      immediatlyCapture();
-  }, 500);
 
-  function immediatlyCapture() {
-    desktopCapturer.getSources({
+  var authToken;
+  var roomId;
+
+  workerJs.on('message', async (event) => {
+    if (event.type === 'get-screenshot') {
+      if(!isInteractable && worker) {
+        let data = await immediatlyCapture();
+        workerJs.postMessage({ 
+          type: 'set-screenshot',
+          data: data,
+          authToken: authToken,
+          roomId: roomId
+        });
+      }
+    } 
+  });
+
+  ipcMain.on('set-auth', (event, data) => {
+    authToken = data.authToken
+    roomId = data.roomId
+  });
+
+  resolution = 'resolution1920x820';
+
+  async function immediatlyCapture() {
+    return desktopCapturer.getSources({
       types: ['screen'],
       thumbnailSize: {
         width: 1920,
@@ -167,10 +178,7 @@ function createWorker(resolution) {
       const selectedSource = sources[0];
       const captureData = selectedSource.thumbnail.toDataURL();
       const imgData = Buffer.from(captureData.split(',')[1], 'base64');
-      workerJs.postMessage({ 
-        type: 'screenshot', 
-        data: imgData 
-      });
+      return imgData;
     })
     .catch(e => {
       console.log("Error:" + e)
