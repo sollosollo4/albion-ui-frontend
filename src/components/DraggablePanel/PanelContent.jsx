@@ -22,10 +22,13 @@ class PanelContent extends Component {
     }
 
     handleButtonsData = (event, data) => {
+        let switches = ['q', 'w', 'e', 'r', 'd', 'f'];
         const urls = data.pressButtonData.buffers.map((buffer, index) => {
             let url = `data:image/png;base64,${buffer}`
-            return { url, index };
+            let button = switches[index]
+            return { url, button };
         });
+        console.log(urls)
         this.setState({ imageUrls: urls });
     }
 
@@ -50,9 +53,9 @@ class PanelContent extends Component {
         this.setState({ transparency });
         this.props.onTransparency(transparency);
     };
-    
+
     render() {
-        const { activeTab, color, textcolor, transparency, imageUrls } = this.state;
+        const { activeTab, transparency, imageUrls } = this.state;
 
         return (
             <div className="tabs-container">
@@ -74,26 +77,7 @@ class PanelContent extends Component {
                     {activeTab === 1 && (
                         <div>
                             <form>
-                                <div>
-                                    <label htmlFor="colorPicker">Цвет панели:</label>
-                                    <input
-                                        type="color"
-                                        id="colorPicker"
-                                        name="color"
-                                        value={color}
-                                        onChange={this.handleColorChange}
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="colorPicker">Цвет текста:</label>
-                                    <input
-                                        type="color"
-                                        id="colorTextPicker"
-                                        name="textcolor"
-                                        value={textcolor}
-                                        onChange={this.handleTextColorChange}
-                                    />
-                                </div>
+                                <b>Панель игрока: {this.props.panel.player.name}</b>
                                 <div>
                                     <label htmlFor="transparencySlider">Прозрачность:</label>
                                     <input
@@ -103,7 +87,7 @@ class PanelContent extends Component {
                                         min="0.1"
                                         max="1"
                                         step="0.05"
-                                        value={transparency}
+                                        value={this.props.panel.transparency}
                                         onChange={this.handleTransparencyChange}
                                     />
                                 </div>
@@ -112,9 +96,14 @@ class PanelContent extends Component {
                     )}
                     {activeTab === 2 && (
                         <div>
-                            {imageUrls.map(({ url, index }) => (
-                                <img key={index} src={url} alt={""} style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                            ))}
+                            <center>{this.props.panel.player.name}</center>
+                            <div>
+                                {imageUrls.map(({ url, button, index }) => (
+                                    this.props.panel.switches[button] && (
+                                        <img key={index} src={url} alt={index} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                                    )
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>

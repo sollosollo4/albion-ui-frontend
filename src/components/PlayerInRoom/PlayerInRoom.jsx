@@ -20,11 +20,12 @@ class PlayerInRoom extends Component {
             textcolor: '#ff0000',
             transparency: 1,
         };
+
+
     }
 
-
-    updateServerPanel(newPanel) {
-        electron.ipcRenderer.send('update-concrete-panel', newPanel);
+    updateServerPanel(data) {
+        electron.ipcRenderer.send('update-concrete-panel', data);
     }
 
     handleLightToggle = () => {
@@ -32,8 +33,11 @@ class PlayerInRoom extends Component {
             const newLightOnState = !prevState.lightOn;
             const newPanel = prevState.panel;
             newPanel.active = newLightOnState;
-            console.log(newPanel)
-            this.updateServerPanel(newPanel);
+            this.updateServerPanel({
+                id: newPanel.player.id,
+                field: 'active',
+                value: newLightOnState
+            });
             return {
                 lightOn: newLightOnState,
                 panel: newPanel
@@ -42,18 +46,32 @@ class PlayerInRoom extends Component {
     };
 
     handleSwitchToggle = (key) => {
-        this.setState((prevState) => ({
-            switches: {
+        this.setState((prevState) => {
+            let updateSwitches = {
                 ...prevState.switches,
                 [key]: !prevState.switches[key],
-            },
-        }));
+            };
+            this.updateServerPanel({
+                id: this.state.panel.player.id,
+                field: 'switches',
+                value: updateSwitches
+            });
+
+            return {
+                switches: updateSwitches
+            };
+        });
     };
 
     handleColorChange = (event) => {
         const color = event.target.value;
         this.setState({ color });
-        //this.props.onColor(color);
+
+        this.updateServerPanel({
+            id: this.state.panel.player.id,
+            field: 'color',
+            value: color
+        });
     };
 
     handleTextColorChange = (event) => {
@@ -65,7 +83,12 @@ class PlayerInRoom extends Component {
     handleTransparencyChange = (event) => {
         const transparency = parseFloat(event.target.value);
         this.setState({ transparency });
-        //this.props.onTransparency(transparency);
+
+        this.updateServerPanel({
+            id: this.state.panel.player.id,
+            field: 'transparency',
+            value: transparency
+        });
     };
 
     render() {

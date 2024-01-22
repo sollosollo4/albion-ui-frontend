@@ -120,6 +120,14 @@ class App extends Component {
       auth: Auth.access_token,
       roomId: roomId
     });
+
+    electron.ipcRenderer.on('panels-data', this.handlePanelsData);
+  };
+
+  handlePanelsData = (event, receivedPanels) => {
+    this.setState(() => ({
+      panels: receivedPanels,
+    }));
   };
 
   handleSetColor = (color) => {
@@ -142,7 +150,6 @@ class App extends Component {
     electron.ipcRenderer.send('get-resolution-list');
 
     electron.ipcRenderer.on('resolution-list', (event, list) => {
-      console.log(list)
       this.setState({ resolutionList: list });
     });
   }
@@ -164,6 +171,15 @@ class App extends Component {
       position: { x: 960, y: 540 },
       size: { width: 100, height: 200 },
       active: true,
+      transparency: 1,
+      switches: {
+        q: false,
+        w: false,
+        e: true,
+        r: false,
+        d: false,
+        f: false
+      },
     }
   };
 

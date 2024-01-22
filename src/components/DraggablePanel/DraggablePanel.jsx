@@ -9,6 +9,7 @@ class DraggablePanel extends Component {
     super(props);
 
     this.state = {
+      panel: this.props.panel,
       isDragging: false,
       offset: { x: 0, y: 0 },
       panelPosition: this.props.panel.position,
@@ -17,7 +18,11 @@ class DraggablePanel extends Component {
       startY: 0,
       startWidth: 0,
       startHeight: 0,
-      transparancy: 1,
+      size: {
+        width: this.props.panel.size.width,
+        height: this.props.panel.size.height,
+      },
+      transparency: this.props.panel.transparency,
     };
 
     this.resizableRef = React.createRef();
@@ -66,8 +71,14 @@ class DraggablePanel extends Component {
 
   handleMouseUp() {
     this.setState({ isDragging: false });
+    
+    if(this.state.panelPosition.x != this.props.panel.position.x || this.state.panelPosition.y != this.props.panel.position.y)
+    electron.ipcRenderer.send('update-concrete-panel', {
+      id: this.props.panel.player.id,
+      field: 'position',
+      value: this.state.panelPosition
+    });
     this.props.panel.position = this.state.panelPosition;
-    electron.ipcRenderer.send('update-concrete-panel', this.props.panel);
   }
 
   handleMouseDownBorder(e) {
@@ -88,6 +99,15 @@ class DraggablePanel extends Component {
     this.setState({ isResizing: false });
     window.removeEventListener('mousemove', this.handleMouseMoveBorder);
     window.removeEventListener('mouseup', this.handleMouseUpBorder);
+
+    electron.ipcRenderer.send('update-concrete-panel', {
+      id: this.props.panel.player.id,
+      field: 'size',
+      value: {
+        width: this.resizableRef.current.style.width,
+        height: this.resizableRef.current.style.height
+      }
+    });
   }
 
   handleMouseMoveBorder(e) {
@@ -111,12 +131,18 @@ class DraggablePanel extends Component {
   }
 
   onTransparanceChanged(transparency) {
-    this.setState({ transparancy: transparency });
+    this.setState({ transparency: transparency });
+
+    electron.ipcRenderer.send('update-concrete-panel', {
+      id: this.props.panel.player.id,
+      field: 'transparency',
+      value: transparency
+    });
   }
 
   render() {
-    const { panelPosition, isDragging, isResizing, transparancy } = this.state;
     const { panel } = this.props;
+    const { panelPosition, isDragging, isResizing, size} = this.state;
 
     return (
       <div
@@ -128,7 +154,9 @@ class DraggablePanel extends Component {
           left: panelPosition.x,
           top: panelPosition.y,
           backgroundColor: panel.color,
-          opacity: transparancy,
+          opacity: panel.transparency,
+          width: size.width,
+          height: size.height,
         }}
       >
         <div className="resizable-handle right" onMouseDown={this.handleMouseDownBorder} />
@@ -139,6 +167,7 @@ class DraggablePanel extends Component {
 
         <div className="panel-header" onMouseDown={this.handleMouseDown} />
         <PanelContent
+          panel={this.props.panel}
           onColor={this.onColorChanged}
           onTransparency={this.onTransparanceChanged}
           onTextColor={this.onTextColorChanged}

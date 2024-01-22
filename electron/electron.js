@@ -216,10 +216,11 @@ app.whenReady().then(() => {
     selectedResolution = resolution;
   });
 
-  ipcMain.on('update-concrete-panel', (event, newPanel) => {
+  ipcMain.on('update-concrete-panel', (event, data) => {
+    console.log(`Set ${data.field} = ${data.value} for panel id: ${data.id}`)
     const updatedPanels = panels.map(panel => {
-      if (panel.player && panel.player.id === newPanel.player.id) {
-        return { ...newPanel };
+      if (panel.player && panel.player.id === data.id) {
+        return { ...panel, [data.field]: data.value };
       }
     });
     panels = updatedPanels;
