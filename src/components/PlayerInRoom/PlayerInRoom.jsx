@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import './player.css'; // Создайте файл App.css для стилей
+import './player.css';
 
+const electron = window.require('electron');
 class PlayerInRoom extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            lightOn: false,
+            panel: this.props.panel,
+            lightOn: true,
             switches: {
                 q: false,
                 w: false,
@@ -17,21 +19,26 @@ class PlayerInRoom extends Component {
             color: '#ff0000',
             textcolor: '#ff0000',
             transparency: 1,
-            position: {
-                x: 100,
-                y: 100
-            },
-            size: {
-                width: 100,
-                height: 200
-            }
         };
     }
 
+
+    updateServerPanel(newPanel) {
+        electron.ipcRenderer.send('update-concrete-panel', newPanel);
+    }
+
     handleLightToggle = () => {
-        this.setState((prevState) => ({
-            lightOn: !prevState.lightOn,
-        }));
+        this.setState((prevState) => {
+            const newLightOnState = !prevState.lightOn;
+            const newPanel = prevState.panel;
+            newPanel.active = newLightOnState;
+            console.log(newPanel)
+            this.updateServerPanel(newPanel);
+            return {
+                lightOn: newLightOnState,
+                panel: newPanel
+            }
+        });
     };
 
     handleSwitchToggle = (key) => {
@@ -62,13 +69,12 @@ class PlayerInRoom extends Component {
     };
 
     render() {
-        const { roomName } = this.props;
-        const { lightOn, switches } = this.state;
-        const { color, textcolor, transparency } = this.state;
+        const { panel } = this.props;
+        const { color, textcolor, transparency, lightOn, switches } = this.state;
 
         return (
             <div className="roomBlock">
-                <h3>{roomName}</h3>
+                <h3>{panel.player.name}</h3>
                 <div className={`lightIndicator ${lightOn ? 'on' : 'off'}`} onClick={this.handleLightToggle}></div>
                 <div className="switchTable">
                     {Object.entries(switches).map(([key, value]) => (

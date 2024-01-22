@@ -1,17 +1,16 @@
 import "./style.css";
 import React, { Component } from 'react';
-import Header from "./components/Header/Header";
 import DraggablePanel from '../components/DraggablePanel/DraggablePanel';
-import MouseTracker from "./MouseTracker";
-import Scanner from "./components/Scanner/Scanner";
 
 const electron = window.require('electron');
 
 class Overlay extends Component {
-  state = {
-    panels: [],
-    circlesData: []
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      panels: []
+    };
+  }
 
   componentDidMount() {
     electron.ipcRenderer.on('panels-data', this.handlePanelsData);
@@ -21,7 +20,7 @@ class Overlay extends Component {
     this.setState(() => ({
       panels: receivedPanels,
     }));
-  }; 
+  };
 
   render() {
     const { panels } = this.state;
@@ -29,7 +28,12 @@ class Overlay extends Component {
       <div className="Overlay">
         <div className='all_panels'>
           {panels.map((panel, index) => (
-            <DraggablePanel key={index} color={panel.color} position={panel.position} />
+            panel.active && (
+              <DraggablePanel
+                key={index}
+                panel={panel}
+              />
+            )
           ))}
         </div>
       </div>

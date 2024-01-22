@@ -4,9 +4,8 @@ import RoomCheckForm from './components/RoomCheckForm';
 import Echo from 'laravel-echo';
 import ModalWindow from './components/ModalWindow/ModalWindow';
 import RegisterForm from './components/RegisterForm';
-import axios from 'axios';
-import PanelCreator from './components/PanelCreator/PanelCreator';
 import PlayerInRoom from './components/PlayerInRoom/PlayerInRoom';
+
 
 const electron = window.require('electron');
 electron.ipcRenderer.on('focus-change', (e, state) => {
@@ -19,11 +18,13 @@ electron.ipcRenderer.on('visibility-change', (e, state) => {
   }
 });
 
-
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      panels: [],
+      resolutionList: {},
+      selectedResolution: 'resolution1920x1080',
       isModalOpen: false,
       roomId: null,
       Auth: null,
@@ -40,9 +41,7 @@ class App extends Component {
   };
 
   handleFormSubmit = (roomId) => {
-    console.log("Connect to room:" + roomId);
     this.setState({ roomId: roomId });
-    // show login form
     this.setState({ isModalOpen: true });
   };
 
@@ -55,8 +54,6 @@ class App extends Component {
 
   joinEchoChannel = () => {
     const { roomId, Auth } = this.state;
-    console.log(roomId, Auth)
-
     const laravelEcho = new Echo({
       cluster: "mt1",
       broadcaster: 'pusher',
@@ -82,12 +79,32 @@ class App extends Component {
     laravelEcho.join('room.' + roomId)
       .here((users) => {
         console.log('Users currently in the channel:', users);
+        users.forEach(element => {
+          this.setState((prevState) => {
+            const updatedPanels = [...prevState.panels, this.createNewPlayerPanel(element)];
+            electron.ipcRenderer.send('panels-data', updatedPanels);
+            return { panels: updatedPanels };
+          });
+        });
       })
       .joining((user) => {
         console.log('User joining the channel:', user);
+        const newPanel = this.createNewPlayerPanel(user);
+        this.setState((prevState) => {
+          const updatedPanels = [...prevState.panels, newPanel];
+          electron.ipcRenderer.send('panels-data', updatedPanels);
+          return { panels: updatedPanels };
+        });
       })
       .leaving((user) => {
         console.log('User leaving the channel:', user);
+
+        this.setState((prevState) => {
+          const updatedPanels = prevState.panels.filter(obj => obj.player.id !== user.player.id);
+          electron.ipcRenderer.send('panels-data', updatedPanels);
+          return { panels: updatedPanels };
+        });
+
       })
       .listen('PressButtonEvent', (e) => {
         console.log("SOME PLAYER IN ROOM PRESS BUTTON")
@@ -99,18 +116,11 @@ class App extends Component {
         console.log(e)
       });
 
-    electron.ipcRenderer.on('set-positions', this.handleSetPosition);
-    
-    electron.ipcRenderer.send('get-positions', { 
-      resolution: 'resolution1920x820', 
+    electron.ipcRenderer.send('get-positions', {
       auth: Auth.access_token,
       roomId: roomId
     });
   };
-
-  handleSetPosition = (event, data) => {
-    this.setState({ resolutions: JSON.parse(data) });
-  }
 
   handleSetColor = (color) => {
     this.setState({ currentColor: color });
@@ -128,15 +138,53 @@ class App extends Component {
     });
   };
 
+  componentDidMount() {
+    electron.ipcRenderer.send('get-resolution-list');
+
+    electron.ipcRenderer.on('resolution-list', (event, list) => {
+      console.log(list)
+      this.setState({ resolutionList: list });
+    });
+  }
+
+  componentWillUnmount() {
+    electron.ipcRenderer.removeAllListeners('resolution-list');
+  }
+
+  handleResolutionChange = (event) => {
+    this.setState({ selectedResolution: event.target.value });
+
+    electron.ipcRenderer.send('set-resolution', event.target.value);
+  };
+
+  createNewPlayerPanel(player) {
+    return {
+      player: player,
+      color: 'lightblue',
+      position: { x: 960, y: 540 },
+      size: { width: 100, height: 200 },
+      active: true,
+    }
+  };
+
   render() {
-    const { isModalOpen, roomId, Auth, resolutions } = this.state;
+    const { isModalOpen, roomId, Auth, resolutionList, panels, selectedResolution } = this.state;
+    const selectedResolutionData = resolutionList[selectedResolution];
     return (
       <div className="App">
         <main>
-        <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
-        <span><b>Ctrl + K</b> чтобы скрыть все панели</span><br />
-        <span><b>Ctrl + Shift + B</b> переключить Albion сканнер</span>
-        <br />
+          <span><b>Выбрать разрешение:</b></span>
+          <select onChange={this.handleResolutionChange} value={selectedResolution}>
+            {Object.keys(resolutionList).map((resolution, index) => (
+              <option key={index} value={resolution}>
+                {resolution}
+              </option>
+            ))}
+          </select><br />
+          <span><b>Ctrl + J</b> чтобы взаимодействовать с панелью</span><br />
+          <span><b>Ctrl + K</b> чтобы скрыть все панели</span><br />
+          <span><b>Ctrl + Shift + B</b> переключить Albion вьювер</span><br />
+          <br />
           {roomId == null || Auth == null ? (
             <div>
               <RoomCheckForm onFormSubmit={this.handleFormSubmit} ></RoomCheckForm>
@@ -147,16 +195,14 @@ class App extends Component {
           ) : (
             <div>
               <span>RoomId: {roomId}</span>
-              <PanelCreator>
-              </PanelCreator>
               <div>
-      <PlayerInRoom 
-        roomName="Player1"
-      ></PlayerInRoom>
-       <PlayerInRoom 
-        roomName="Player2"
-      ></PlayerInRoom>
-      </div>
+                {panels.map((panel, key) => (
+                  <PlayerInRoom
+                    key={key}
+                    panel={panel}
+                  ></PlayerInRoom>
+                ))}
+              </div>
             </div>
           )}
         </main>
@@ -164,5 +210,6 @@ class App extends Component {
     );
   }
 }
+
 
 export default App;

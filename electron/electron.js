@@ -29,7 +29,6 @@ const data_resolution_coords =
     ]
   }
 };
-exports.data_resolution_coords = data_resolution_coords;
 
 const toggleMouseKey = 'CmdOrCtrl + J'
 const toggleShowKey = 'CmdOrCtrl + K'
@@ -68,6 +67,7 @@ function createMainWindow() {
 }
 let worker = false;
 let isInteractable = false
+let selectedResolution = 'resolution1920x1080';
 function createOverlay() {
   const overlayWindow = new BrowserWindow({
     name: `AttachableWindow`,
@@ -127,7 +127,7 @@ function createOverlay() {
   return overlayWindow;
 }
 
-function createWorker(resolution) {
+function createWorker() {
   const workerWindow = new BrowserWindow({
     show: false,
     webPreferences: {
@@ -153,7 +153,8 @@ function createWorker(resolution) {
           type: 'set-screenshot',
           data: data,
           authToken: authToken,
-          roomId: roomId
+          roomId: roomId,
+          resolution: selectedResolution
         });
       }
     } 
@@ -163,8 +164,6 @@ function createWorker(resolution) {
     authToken = data.authToken
     roomId = data.roomId
   });
-
-  resolution = 'resolution1920x820';
 
   async function immediatlyCapture() {
     return desktopCapturer.getSources({
@@ -185,63 +184,6 @@ function createWorker(resolution) {
     });
   }
 
-  function captureAndSend(selectedSource, x, y, radius) {
-    const captureData = selectedSource.thumbnail.toDataURL();
-    const imgData = Buffer.from(captureData.split(',')[1], 'base64');
-    const processImageResult = processImage(imgData, x, y, radius);
-    // const base64Data = processImageResult.replace(/^data:image\/png;base64,/, '');
-    // const buffer = Buffer.from(base64Data, 'base64');
-    return processImageResult;
-
-    function processImage(media, x, y, radius) {
-      radius = Math.floor(radius);
-      let dblRad = radius * 2;
-      try {
-        const mat = cv.imdecode(media);
-        if (mat.empty) {
-          throw new Error('Empty image');
-        }
-        // Creating a circular mask
-        const mask = new cv.Mat(mat.rows, mat.cols, cv.CV_8U, 0);
-        const center = new cv.Point(x, y);
-        mask.drawCircle(center, radius, new cv.Vec(255, 255, 255), -1, cv.LINE_8, 0);
-        let resultMat = new cv.Mat(dblRad, dblRad, cv.CV_8UC4, [-1, -1, -1, 0]);
-        resultMat = mat.copyTo(resultMat, mask);
-        if (!resultMat.empty) {
-          const rect = new cv.Rect(x - radius, y - radius, dblRad, dblRad);
-          const croppedImage = resultMat.getRegion(rect);
-
-          const fourChannelMat = new cv.Mat(croppedImage.rows, croppedImage.cols, cv.CV_8UC4, [-1, -1, -1, 0]);
-          const centerX = fourChannelMat.rows / 2;
-          const centerY = fourChannelMat.cols / 2;
-          for (let row = 0; row < fourChannelMat.rows; row++) {
-            for (let col = 0; col < fourChannelMat.cols; col++) {
-              let channels =  croppedImage.at(row, col);
-              if(isPointInsideCircle(row, col, centerX, centerY, radius))
-                fourChannelMat.set(row, col, [channels.x, channels.y, channels.z, 255]);
-              else 
-                fourChannelMat.set(row, col, [-1, -1, -1, 0]);
-            }
-          }
-
-          function isPointInsideCircle(x, y, centerX, centerY, radius) {
-            const distanceSquared = Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2);
-            const radiusSquared = Math.pow(radius, 2);
-          
-            return distanceSquared <= radiusSquared;
-          }
-          const resultBase64 = cv.imencode('.png', fourChannelMat).toString('base64');
-          return resultBase64;
-        } else {
-          throw new Error('Empty resultMat');
-        }
-      } catch (error) {
-        console.error('Error processing image:', error);
-        throw error;
-      }
-    }
-  }
-
   return workerWindow;
 }
 
@@ -260,13 +202,38 @@ app.whenReady().then(() => {
       auth: data.auth,
       roomId: data.roomId
     });
-    mainWindow.webContents.send('set-positions', JSON.stringify(data_resolution_coords));
   });
 
   ipcMain.on('PressButtonEvent', (event, data) => {
     overlayWindow.webContents.send('PressButtonEvent', data);
   });
-}).catch((echo) => {
+
+  ipcMain.on('get-resolution-list', (event) => {
+    event.reply('resolution-list', data_resolution_coords);
+  });
+
+  ipcMain.on('set-resolution', (event, resolution) => {
+    selectedResolution = resolution;
+  });
+
+  ipcMain.on('update-concrete-panel', (event, newPanel) => {
+    const updatedPanels = panels.map(panel => {
+      if (panel.player && panel.player.id === newPanel.player.id) {
+        return { ...newPanel };
+      }
+    });
+    panels = updatedPanels;
+    overlayWindow.webContents.send('panels-data', panels);
+  });
+
+  ipcMain.on('remove-concrete-panel', (event, newPanel) => {
+    const updatedPanels = array.filter(obj => obj.player.id !== newPanel.player.id);
+    panels = updatedPanels;
+    overlayWindow.webContents.send('panels-data', panels);
+  });
+
+})
+.catch((echo) => {
   console.log(echo);
 });
 

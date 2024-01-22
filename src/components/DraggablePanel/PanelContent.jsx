@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PlayerContent from './PlayerContent';
-import './tabs.css'; // Создайте файл стилей Tabs.css
+import './tabs.css';
 
 const electron = window.require('electron');
 
@@ -112,14 +112,9 @@ class PanelContent extends Component {
                     )}
                     {activeTab === 2 && (
                         <div>
-                            <div>
-                                {imageUrls.map(({ url, index }) => (
-                                    <img key={index} src={url} alt={""} style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                                ))}
-                            </div>
-
-
-                            {/* <PlayerContent /> */}
+                            {imageUrls.map(({ url, index }) => (
+                                <img key={index} src={url} alt={""} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                            ))}
                         </div>
                     )}
                 </div>

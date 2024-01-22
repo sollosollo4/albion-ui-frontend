@@ -1,144 +1,151 @@
 import './style.css';
-import React, { useState, useRef  } from 'react';
-import PanelContent from './PanelContent'
+import React, { Component, useRef } from 'react';
+import PanelContent from './PanelContent';
 
-const DraggablePanel = ({ color, position }) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [panelPosition, setPanelPosition] = useState(position);
+const electron = window.require('electron');
 
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setOffset({
-      x: e.clientX - panelPosition.x,
-      y: e.clientY - panelPosition.y,
+class DraggablePanel extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      isDragging: false,
+      offset: { x: 0, y: 0 },
+      panelPosition: this.props.panel.position,
+      isResizing: false,
+      startX: 0,
+      startY: 0,
+      startWidth: 0,
+      startHeight: 0,
+      transparancy: 1,
+    };
+
+    this.resizableRef = React.createRef();
+
+    // Binding event handlers
+    this.handleMouseDown = this.handleMouseDown.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseUp = this.handleMouseUp.bind(this);
+    this.handleMouseDownBorder = this.handleMouseDownBorder.bind(this);
+    this.handleMouseMoveBorder = this.handleMouseMoveBorder.bind(this);
+    this.handleMouseUpBorder = this.handleMouseUpBorder.bind(this);
+    this.onColorChanged = this.onColorChanged.bind(this);
+    this.onTextColorChanged = this.onTextColorChanged.bind(this);
+    this.onTransparanceChanged = this.onTransparanceChanged.bind(this);
+  }
+
+  componentDidMount() {
+    // Adding event listeners when the component mounts
+    window.addEventListener('mousemove', this.handleMouseMove);
+    window.addEventListener('mouseup', this.handleMouseUp);
+  }
+
+  componentWillUnmount() {
+    // Removing event listeners when the component unmounts
+    window.removeEventListener('mousemove', this.handleMouseMove);
+    window.removeEventListener('mouseup', this.handleMouseUp);
+  }
+
+  handleMouseDown(e) {
+    this.setState({
+      isDragging: true,
+      offset: {
+        x: e.clientX - this.state.panelPosition.x,
+        y: e.clientY - this.state.panelPosition.y,
+      },
     });
-  };
+  }
 
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      const newX = e.clientX - offset.x;
-      const newY = e.clientY - offset.y;
-      setPanelPosition({ x: newX, y: newY });
+  handleMouseMove(e) {
+    if (this.state.isDragging) {
+      const newX = e.clientX - this.state.offset.x;
+      const newY = e.clientY - this.state.offset.y;
+      this.setState({ panelPosition: { x: newX, y: newY } });
     }
-  };
+  }
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  handleMouseUp() {
+    this.setState({ isDragging: false });
+    this.props.panel.position = this.state.panelPosition;
+    electron.ipcRenderer.send('update-concrete-panel', this.props.panel);
+  }
 
-  // Добавляем и удалем слушатели при монтировании и размонтировании компонента
-  React.useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    } else {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging]);
-
-  const [isResizing, setIsResizing] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startWidth, setStartWidth] = useState(0);
-  const [startHeight, setStartHeight] = useState(0);
-
-  const resizableRef = useRef(null);
-
-  const handleMouseDownBorder = (e) => {
+  handleMouseDownBorder(e) {
     e.preventDefault();
-    setIsResizing(true);
+    this.setState({
+      isResizing: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: this.resizableRef.current.offsetWidth,
+      startHeight: this.resizableRef.current.offsetHeight,
+    });
 
-    setStartX(e.clientX);
-    setStartY(e.clientY);
-    setStartWidth(resizableRef.current.offsetWidth);
-    setStartHeight(resizableRef.current.offsetHeight);
-    
-    window.addEventListener('mousemove', handleMouseMoveBorder);
-    window.addEventListener('mouseup', handleMouseUpBorder);
-  };
+    window.addEventListener('mousemove', this.handleMouseMoveBorder);
+    window.addEventListener('mouseup', this.handleMouseUpBorder);
+  }
 
-  const handleMouseUpBorder = () => {
-    setIsResizing(false);
-    window.removeEventListener('mousemove', handleMouseMoveBorder);
-    window.removeEventListener('mouseup', handleMouseUpBorder);
-  };
+  handleMouseUpBorder() {
+    this.setState({ isResizing: false });
+    window.removeEventListener('mousemove', this.handleMouseMoveBorder);
+    window.removeEventListener('mouseup', this.handleMouseUpBorder);
+  }
 
-  React.useEffect(() => {
-    if (isResizing) {
-      window.addEventListener('mousemove', handleMouseMoveBorder);
-      window.addEventListener('mouseup', handleMouseUpBorder);
-    } else {
-      window.removeEventListener('mousemove', handleMouseMoveBorder);
-      window.removeEventListener('mouseup', handleMouseUpBorder);
+  handleMouseMoveBorder(e) {
+    if (this.state.isResizing) {
+      const deltaX = e.clientX - this.state.startX;
+      const deltaY = e.clientY - this.state.startY;
+      const newWidth = this.state.startWidth + deltaX;
+      const newHeight = this.state.startHeight + deltaY;
+
+      this.resizableRef.current.style.width = `${Math.max(30, newWidth)}px`;
+      this.resizableRef.current.style.height = `${Math.max(30, newHeight)}px`;
     }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMoveBorder);
-      window.removeEventListener('mouseup', handleMouseUpBorder);
-    };
-  }, [isResizing]);
-
-  const handleMouseMoveBorder = (e) => {
-    if (isResizing) {
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      const newWidth = startWidth + deltaX;
-      const newHeight = startHeight + deltaY;
-
-      resizableRef.current.style.width = `${Math.max(100, newWidth)}px`;
-      resizableRef.current.style.height = `${Math.max(100, newHeight)}px`;
-    }
-  };
-
-  const [transparancy, setTransparency] = useState();
-
-  const onColorChanged = (data) => {
-    resizableRef.current.style.backgroundColor = data
   }
 
-  const onTextColorChanged = (data) => {
-    resizableRef.current.style.color = data
+  onColorChanged(data) {
+    this.resizableRef.current.style.backgroundColor = data;
   }
 
-  const onTransparanceChanged = (transparency) => {
-    setTransparency(transparency)
+  onTextColorChanged(data) {
+    this.resizableRef.current.style.color = data;
   }
 
-  return (
-    <div
-      className={`draggable-panel ${isDragging ? 'dragging' : ''} resizable-div ${isResizing ? 'resizing' : ''}`}
-      ref={resizableRef}
-      style={{ 
-        left: panelPosition.x, 
-        top: panelPosition.y, 
-        backgroundColor: color,
-        opacity: transparancy
-      }}
-    >
-      <div className="resizable-handle right" onMouseDown={handleMouseDownBorder} />
-      <div className="resizable-handle bottom" onMouseDown={handleMouseDownBorder} />
-      <div className="resizable-handle left" onMouseDown={handleMouseDownBorder} />
-      <div className="resizable-handle bottom-left" onMouseDown={handleMouseDownBorder} />
-      <div className="resizable-handle bottom-right" onMouseDown={handleMouseDownBorder} />
+  onTransparanceChanged(transparency) {
+    this.setState({ transparancy: transparency });
+  }
 
-      <div className="panel-header" onMouseDown={handleMouseDown}/>
-      
-      <PanelContent 
-        onColor={onColorChanged} 
-        onTransparency={onTransparanceChanged}
-        onTextColor={onTextColorChanged}
-      />
+  render() {
+    const { panelPosition, isDragging, isResizing, transparancy } = this.state;
+    const { panel } = this.props;
 
-    </div>
-  );
-};
+    return (
+      <div
+        className={`draggable-panel ${isDragging ? 'dragging' : ''} resizable-div ${
+          isResizing ? 'resizing' : ''
+        }`}
+        ref={this.resizableRef}
+        style={{
+          left: panelPosition.x,
+          top: panelPosition.y,
+          backgroundColor: panel.color,
+          opacity: transparancy,
+        }}
+      >
+        <div className="resizable-handle right" onMouseDown={this.handleMouseDownBorder} />
+        <div className="resizable-handle bottom" onMouseDown={this.handleMouseDownBorder} />
+        <div className="resizable-handle left" onMouseDown={this.handleMouseDownBorder} />
+        <div className="resizable-handle bottom-left" onMouseDown={this.handleMouseDownBorder} />
+        <div className="resizable-handle bottom-right" onMouseDown={this.handleMouseDownBorder} />
+
+        <div className="panel-header" onMouseDown={this.handleMouseDown} />
+        <PanelContent
+          onColor={this.onColorChanged}
+          onTransparency={this.onTransparanceChanged}
+          onTextColor={this.onTextColorChanged}
+        />
+      </div>
+    );
+  }
+}
 
 export default DraggablePanel;

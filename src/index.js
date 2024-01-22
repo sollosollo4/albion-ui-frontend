@@ -5,7 +5,6 @@ import reportWebVitals from './reportWebVitals';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import Overlay from './Overlay/Overlay';
 import App from './App';
-
 window.Pusher = require('pusher-js');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

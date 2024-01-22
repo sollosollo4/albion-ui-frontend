@@ -32,6 +32,7 @@
 }
 
 .resizable-handle {
+  opacity: 0.02;
   position: absolute;
   width: 2px; /* Ширина "хвата" */
   height: 21px;

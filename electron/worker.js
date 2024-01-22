@@ -27,7 +27,6 @@ const data_resolution_coords =
     }
 };
 
-const resolution = 'resolution1920x820';
 
 function captureAndSend(imgData, x, y, radius) {
     const processImageResult = processImage(imgData, x, y, radius);
@@ -84,7 +83,7 @@ function captureAndSend(imgData, x, y, radius) {
     }
 }
 
-function intervalWorker(imgData, roomId, authToken) {
+function intervalWorker(imgData, roomId, authToken, resolution = 'resolution1920x1080') {
     let buffers = [];
     data_resolution_coords[resolution].coords.forEach(function (elem, index) {
         let buffer = captureAndSend(imgData, elem.x, elem.y, elem.r);
@@ -115,6 +114,6 @@ setInterval(() => {
 
 parentPort.on('message', message => {
     if (message.type === 'set-screenshot') {
-        intervalWorker(message.data, message.roomId, message.authToken);
+        intervalWorker(message.data, message.roomId, message.authToken, message.resolution);
     }
 });
