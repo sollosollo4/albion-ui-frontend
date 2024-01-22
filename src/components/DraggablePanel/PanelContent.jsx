@@ -22,13 +22,15 @@ class PanelContent extends Component {
     }
 
     handleButtonsData = (event, data) => {
+        console.log([this.props.panel.player.id , data.pressButtonData.userId])
+        if(this.props.panel.player.id != data.pressButtonData.userId)
+            return;
         let switches = ['q', 'w', 'e', 'r', 'd', 'f'];
         const urls = data.pressButtonData.buffers.map((buffer, index) => {
             let url = `data:image/png;base64,${buffer}`
             let button = switches[index]
             return { url, button };
         });
-        console.log(urls)
         this.setState({ imageUrls: urls });
     }
 
