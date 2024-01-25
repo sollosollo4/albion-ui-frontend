@@ -70,15 +70,16 @@ class DraggablePanel extends Component {
   }
 
   handleMouseUp() {
-    this.setState({ isDragging: false });
-    
-    if(this.state.panelPosition.x != this.props.panel.position.x || this.state.panelPosition.y != this.props.panel.position.y)
-    electron.ipcRenderer.send('update-concrete-panel', {
-      id: this.props.panel.player.id,
-      field: 'position',
-      value: this.state.panelPosition
+    this.setState({ isDragging: false }, () => {
+
+      if (this.props.panel.position.x != this.state.panelPosition.x ||
+        this.props.panel.position.y != this.state.panelPosition.y)
+        electron.ipcRenderer.send('update-concrete-panel', {
+          id: this.props.panel.player.id,
+          field: 'position',
+          value: this.state.panelPosition
+        });
     });
-    this.props.panel.position = this.state.panelPosition;
   }
 
   handleMouseDownBorder(e) {
@@ -96,18 +97,18 @@ class DraggablePanel extends Component {
   }
 
   handleMouseUpBorder() {
-    this.setState({ isResizing: false });
+    this.setState({ isResizing: false }, () => {
+      electron.ipcRenderer.send('update-concrete-panel', {
+        id: this.props.panel.player.id,
+        field: 'size',
+        value: {
+          width: this.resizableRef.current.style.width,
+          height: this.resizableRef.current.style.height
+        }
+      });
+    });
     window.removeEventListener('mousemove', this.handleMouseMoveBorder);
     window.removeEventListener('mouseup', this.handleMouseUpBorder);
-
-    electron.ipcRenderer.send('update-concrete-panel', {
-      id: this.props.panel.player.id,
-      field: 'size',
-      value: {
-        width: this.resizableRef.current.style.width,
-        height: this.resizableRef.current.style.height
-      }
-    });
   }
 
   handleMouseMoveBorder(e) {
@@ -131,24 +132,23 @@ class DraggablePanel extends Component {
   }
 
   onTransparanceChanged(transparency) {
-    this.setState({ transparency: transparency });
-
-    electron.ipcRenderer.send('update-concrete-panel', {
-      id: this.props.panel.player.id,
-      field: 'transparency',
-      value: transparency
+    this.setState({ transparency: transparency }, () => {
+      electron.ipcRenderer.send('update-concrete-panel', {
+        id: this.props.panel.player.id,
+        field: 'transparency',
+        value: transparency
+      });
     });
   }
 
   render() {
     const { panel } = this.props;
-    const { panelPosition, isDragging, isResizing, size} = this.state;
+    const { panelPosition, isDragging, isResizing, size } = this.state;
 
     return (
       <div
-        className={`draggable-panel ${isDragging ? 'dragging' : ''} resizable-div ${
-          isResizing ? 'resizing' : ''
-        }`}
+        className={`draggable-panel ${isDragging ? 'dragging' : ''} resizable-div ${isResizing ? 'resizing' : ''
+          }`}
         ref={this.resizableRef}
         style={{
           left: panelPosition.x,

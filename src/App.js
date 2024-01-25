@@ -122,7 +122,7 @@ class App extends Component {
       roomId: roomId
     });
 
-    electron.ipcRenderer.on('panels-data', this.handlePanelsData);
+    electron.ipcRenderer.on('panels-data-m', this.handlePanelsData);
   };
 
   handlePanelsData = (event, receivedPanels) => {

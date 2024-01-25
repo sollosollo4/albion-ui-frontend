@@ -19,7 +19,9 @@ class Overlay extends Component {
   handlePanelsData = (event, receivedPanels) => {
     this.setState(() => ({
       panels: receivedPanels,
-    }));
+    }), () => {
+      console.log(this.state.panels)
+    });
   };
 
   render() {
@@ -28,7 +30,7 @@ class Overlay extends Component {
       <div className="Overlay">
         <div className='all_panels'>
           {panels.map((panel, index) => (
-            panel.active && (
+            panel && panel.active && (
               <DraggablePanel
                 key={index}
                 panel={panel}

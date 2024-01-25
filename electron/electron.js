@@ -223,16 +223,18 @@ app.whenReady().then(() => {
     const updatedPanels = panels.map(panel => {
       if (panel.player && panel.player.id === data.id) {
         return { ...panel, [data.field]: data.value };
-      }
+      } else return { ...panel }
     });
     panels = updatedPanels;
     overlayWindow.webContents.send('panels-data', panels);
+    mainWindow.webContents.send('panels-data-m', panels);
   });
 
   ipcMain.on('remove-concrete-panel', (event, newPanel) => {
     const updatedPanels = array.filter(obj => obj.player.id !== newPanel.player.id);
     panels = updatedPanels;
     overlayWindow.webContents.send('panels-data', panels);
+    mainWindow.webContents.send('panels-data-m', panels);
   });
 
 })
