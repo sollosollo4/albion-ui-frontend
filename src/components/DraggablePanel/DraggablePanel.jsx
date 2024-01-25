@@ -1,5 +1,5 @@
 import './style.css';
-import React, { Component, useRef } from 'react';
+import React, { Component } from 'react';
 import PanelContent from './PanelContent';
 
 const electron = window.require('electron');

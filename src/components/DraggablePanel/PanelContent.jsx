@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PlayerContent from './PlayerContent';
 import './tabs.css';
 
 const electron = window.require('electron');
@@ -56,7 +55,7 @@ class PanelContent extends Component {
     };
 
     render() {
-        const { activeTab, transparency, imageUrls } = this.state;
+        const { activeTab, imageUrls } = this.state;
 
         return (
             <div className="tabs-container">

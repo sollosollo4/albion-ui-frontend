@@ -163,7 +163,7 @@ class App extends Component {
 
   render() {
     const { isModalOpen, roomId, Auth, resolutionList, panels, selectedResolution } = this.state;
-    const selectedResolutionData = resolutionList[selectedResolution];
+    //const selectedResolutionData = resolutionList[selectedResolution];
     return (
       <div className="App">
         <main>
