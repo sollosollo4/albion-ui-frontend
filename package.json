@@ -74,7 +74,7 @@
       "./node_modules/**/*"
     ],
     "extraMetadata": {
-      "main": "./build/electron/main.js"
+      "main": "./build/electron/electron.js"
     },
     "nsis": {
       "oneClick": false,
