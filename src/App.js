@@ -100,7 +100,7 @@ class App extends Component {
       .leaving((user) => {
         console.log('User leaving the channel:', user);
         this.setState((prevState) => {
-          const updatedPanels = prevState.panels.filter(obj => obj.player.id !== user.player.id);
+          const updatedPanels = prevState.panels.filter(pan => pan.player.id !== user.id);
           return { panels: updatedPanels };
         }, () => {
           electron.ipcRenderer.send('panels-data', this.state.panels);
