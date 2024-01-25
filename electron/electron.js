@@ -1,12 +1,12 @@
 const { OverlayController, OVERLAY_WINDOW_OPTS } = require('electron-overlay-window')
-const { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer } = require('electron')
-const { fork } = require('child_process');
+const { app, dialog, BrowserWindow, globalShortcut, ipcMain, desktopCapturer } = require('electron')
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
 const cv = require('@u4/opencv4nodejs');
 
-const data_resolution_coords =
+
+var data_resolution_coords =
 {
   resolution1920x1080: {
     coords: [
@@ -59,7 +59,7 @@ function createMainWindow() {
 
   mainWindow.loadURL(startUrl);
 
-  mainWindow.webContents.openDevTools({ mode: 'detach', activate: false })
+  //mainWindow.webContents.openDevTools({ mode: 'detach', activate: false })
 
   mainWindow.on('close', () => app.quit());
 
@@ -93,7 +93,7 @@ function createOverlay() {
   });
   overlayWindow.loadURL(startUrl);
 
-  overlayWindow.webContents.openDevTools({ mode: 'detach', activate: false })
+  //overlayWindow.webContents.openDevTools({ mode: 'detach', activate: false })
 
   OverlayController.attachByTitle(
     overlayWindow,
@@ -137,19 +137,19 @@ function createWorker() {
     },
   });
   workerWindow.loadURL(__dirname + "/worker.html");
-  workerWindow.webContents.openDevTools();
+  //workerWindow.webContents.openDevTools();
 
   const Worker = require('worker_threads').Worker;
-  const workerJs = new Worker(__dirname + '/worker.js', { data: 1 });
+  const workerJs = new Worker(__dirname + '/worker.js', { workerData: { resolutions: data_resolution_coords } });
 
   var authToken;
   var roomId;
 
   workerJs.on('message', async (event) => {
     if (event.type === 'get-screenshot') {
-      if(!isInteractable && worker) {
+      if (!isInteractable && worker) {
         let data = await immediatlyCapture();
-        workerJs.postMessage({ 
+        workerJs.postMessage({
           type: 'set-screenshot',
           data: data,
           authToken: authToken,
@@ -157,7 +157,7 @@ function createWorker() {
           resolution: selectedResolution
         });
       }
-    } 
+    }
   });
 
   ipcMain.on('set-auth', (event, data) => {
@@ -170,24 +170,40 @@ function createWorker() {
       types: ['screen'],
       thumbnailSize: {
         width: 1920,
-        height: 1080, 
+        height: 1080,
       }
     })
-    .then(sources => {
-      const selectedSource = sources[0];
-      const captureData = selectedSource.thumbnail.toDataURL();
-      const imgData = Buffer.from(captureData.split(',')[1], 'base64');
-      return imgData;
-    })
-    .catch(e => {
-      console.log("Error:" + e)
-    });
+      .then(sources => {
+        const selectedSource = sources[0];
+        const captureData = selectedSource.thumbnail.toDataURL();
+        const imgData = Buffer.from(captureData.split(',')[1], 'base64');
+        return imgData;
+      })
+      .catch(e => {
+        console.log("Error:" + e)
+      });
   }
 
   return workerWindow;
 }
 
 app.whenReady().then(() => {
+
+  const filePath = __dirname + '/res.cfg';
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    try {
+      if(getRes = JSON.parse(data))
+      data_resolution_coords = getRes;
+    } catch (e) {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Error',
+        message: e.message,
+        buttons: ['OK']
+      })
+    }
+  });
+
   const mainWindow = createMainWindow(); // main window
   const overlayWindow = createOverlay(); // overlay
   const workerWindow = createWorker(); // worker process
@@ -233,11 +249,10 @@ app.whenReady().then(() => {
     overlayWindow.webContents.send('panels-data', panels);
     mainWindow.webContents.send('panels-data-m', panels);
   });
-
 })
-.catch((echo) => {
-  console.log(echo);
-});
+  .catch((echo) => {
+    console.log(echo);
+  });
 
 app.on('activate', function () {
   if (BrowserWindow.getAllWindows().length === 0) createMainWindow()

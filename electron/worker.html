@@ -2,7 +2,6 @@
 <html>
 <header>
     <title>WORKER</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </header>
 <body>
 </body>
@@ -19,23 +18,5 @@
             authToken: AuthToken
         })
     });
-
-    function handleBuffer(event, buffers) {
-        axios.post(`https://albion-overlay.ru/api/rooms/${roomId}/sendPressButtonEvent`, {
-            buffers: buffers
-        }, {
-            withCredentials: true,
-            headers: {
-                'Authorization': `Bearer ${AuthToken}`,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => {
-            
-        })
-        .catch(error => {
-            });
-    }
 </script>
-
 </html>

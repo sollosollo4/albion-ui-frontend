@@ -1,32 +1,9 @@
-const { parentPort } = require('worker_threads');
+const { workerData, parentPort } = require('worker_threads');
 const cv = require('@u4/opencv4nodejs');
 
 const axios = require('axios');
 
-const data_resolution_coords =
-{
-    resolution1920x1080: {
-        coords: [
-            { x: 648, y: 1032, r: 24 }, // q
-            { x: 738, y: 1032, r: 24 }, // w
-            { x: 828, y: 1032, r: 24 }, // e 
-            { x: 918, y: 1032, r: 24 }, // r
-            { x: 1008, y: 1032, r: 24 }, // d
-            { x: 1098, y: 1032, r: 24 }, // f
-        ]
-    },
-    resolution1920x820: {
-        coords: [
-            { x: 723, y: 914, r: 18 }, // q
-            { x: 791, y: 914, r: 18 }, // w
-            { x: 860, y: 914, r: 18 }, // e 
-            { x: 927, y: 914, r: 18 }, // r
-            { x: 995, y: 914, r: 18 }, // d
-            { x: 1064, y: 914, r: 18 }, // f
-        ]
-    }
-};
-
+const data_resolution_coords = workerData.resolutions;
 
 function captureAndSend(imgData, x, y, radius) {
     const processImageResult = processImage(imgData, x, y, radius);

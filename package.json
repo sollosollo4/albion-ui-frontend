@@ -1,8 +1,8 @@
 {
-  "name": "albion-ui",
+  "name": "albion-overlay",
   "author": "sollosollo4",
-  "description": "Albion overlay for monitoring friendly cooldowns",
-  "version": "0.0.9",
+  "description": "An overlay program that will help you monitor cooldown of your friends abilities.",
+  "version": "0.1.0",
   "private": true,
   "main": "electron/electron.js",
   "productName": "AlbionOverlay",
