@@ -37,7 +37,7 @@
     "react-eject": "react-scripts eject",
     "build-react": "react-scripts build",
     "build-electron": "mkdir build/electron & robocopy electron build/electron /S",
-    "package": "electron-builder build --win -c.extraMetadata.main=build/electron/main.js --publish never"
+    "package": "electron-builder build --win -c.extraMetadata.main=build/electron/electron.js --publish never"
   },
   "eslintConfig": {
     "extends": [
