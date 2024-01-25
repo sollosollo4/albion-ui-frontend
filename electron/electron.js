@@ -189,11 +189,14 @@ function createWorker() {
 
 app.whenReady().then(() => {
 
-  const filePath = __dirname + '/res.cfg';
-  fs.readFile(filePath, 'utf8', (err, data) => {
+  const userDataPath = app.getPath('userData');
+const configPath = path.join(userDataPath, 'res.json');
+  fs.readFile(configPath, 'utf8', (err, data) => {
     try {
+      if(err) throw new Error(err);
+      
       if(getRes = JSON.parse(data))
-      data_resolution_coords = getRes;
+        data_resolution_coords = getRes;
     } catch (e) {
       dialog.showMessageBox({
         type: 'info',
