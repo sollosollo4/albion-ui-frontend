@@ -82,27 +82,28 @@ class App extends Component {
         users.forEach(element => {
           this.setState((prevState) => {
             const updatedPanels = [...prevState.panels, this.createNewPlayerPanel(element)];
-            electron.ipcRenderer.send('panels-data', updatedPanels);
             return { panels: updatedPanels };
+          }, () => {
+            electron.ipcRenderer.send('panels-data', this.state.panels);
           });
         });
       })
       .joining((user) => {
         console.log('User joining the channel:', user);
-        const newPanel = this.createNewPlayerPanel(user);
         this.setState((prevState) => {
-          const updatedPanels = [...prevState.panels, newPanel];
-          electron.ipcRenderer.send('panels-data', updatedPanels);
+          const updatedPanels = [...prevState.panels, this.createNewPlayerPanel(user)];
           return { panels: updatedPanels };
+        }, () => {
+          electron.ipcRenderer.send('panels-data', this.state.panels);
         });
       })
       .leaving((user) => {
         console.log('User leaving the channel:', user);
-
         this.setState((prevState) => {
           const updatedPanels = prevState.panels.filter(obj => obj.player.id !== user.player.id);
-          electron.ipcRenderer.send('panels-data', updatedPanels);
           return { panels: updatedPanels };
+        }, () => {
+          electron.ipcRenderer.send('panels-data', this.state.panels);
         });
 
       })
@@ -128,22 +129,6 @@ class App extends Component {
     this.setState(() => ({
       panels: receivedPanels,
     }));
-  };
-
-  handleSetColor = (color) => {
-    this.setState({ currentColor: color });
-  };
-
-  handleLightToggle = () => {
-    this.setState((prevState) => ({ lightOn: !prevState.lightOn }));
-  };
-
-  handleSwitchToggle = (index) => {
-    this.setState((prevState) => {
-      const newSwitches = [...prevState.switches];
-      newSwitches[index] = !newSwitches[index];
-      return { switches: newSwitches };
-    });
   };
 
   componentDidMount() {

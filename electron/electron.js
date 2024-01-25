@@ -193,6 +193,7 @@ app.whenReady().then(() => {
   const workerWindow = createWorker(); // worker process
 
   ipcMain.on('panels-data', (event, newPanels) => {
+    console.log("Update panels"+newPanels);
     panels = newPanels;
     overlayWindow.webContents.send('panels-data', newPanels);
   });
@@ -218,6 +219,7 @@ app.whenReady().then(() => {
 
   ipcMain.on('update-concrete-panel', (event, data) => {
     console.log(`Set ${data.field} = ${data.value} for panel id: ${data.id}`)
+    console.log(panels);
     const updatedPanels = panels.map(panel => {
       if (panel.player && panel.player.id === data.id) {
         return { ...panel, [data.field]: data.value };

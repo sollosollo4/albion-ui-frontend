@@ -20,8 +20,6 @@ class PlayerInRoom extends Component {
             textcolor: '#ff0000',
             transparency: 1,
         };
-
-
     }
 
     updateServerPanel(data) {
@@ -33,15 +31,16 @@ class PlayerInRoom extends Component {
             const newLightOnState = !prevState.lightOn;
             const newPanel = prevState.panel;
             newPanel.active = newLightOnState;
-            this.updateServerPanel({
-                id: newPanel.player.id,
-                field: 'active',
-                value: newLightOnState
-            });
             return {
                 lightOn: newLightOnState,
                 panel: newPanel
             }
+        }, () => {
+            this.updateServerPanel({
+                id: this.state.panel.player.id,
+                field: 'active',
+                value: this.state.lightOn
+            });
         });
     };
 
@@ -51,26 +50,26 @@ class PlayerInRoom extends Component {
                 ...prevState.switches,
                 [key]: !prevState.switches[key],
             };
-            this.updateServerPanel({
-                id: this.state.panel.player.id,
-                field: 'switches',
-                value: updateSwitches
-            });
-
             return {
                 switches: updateSwitches
             };
+        }, () => {
+            this.updateServerPanel({
+                id: this.state.panel.player.id,
+                field: 'switches',
+                value: this.state.switches
+            });
         });
     };
 
     handleColorChange = (event) => {
         const color = event.target.value;
-        this.setState({ color });
-
-        this.updateServerPanel({
-            id: this.state.panel.player.id,
-            field: 'color',
-            value: color
+        this.setState({ color }, () => {
+            this.updateServerPanel({
+                id: this.state.panel.player.id,
+                field: 'color',
+                value: color
+            });
         });
     };
 
@@ -82,12 +81,12 @@ class PlayerInRoom extends Component {
 
     handleTransparencyChange = (event) => {
         const transparency = parseFloat(event.target.value);
-        this.setState({ transparency });
-
-        this.updateServerPanel({
-            id: this.state.panel.player.id,
-            field: 'transparency',
-            value: transparency
+        this.setState({ transparency }, () => {
+            this.updateServerPanel({
+                id: this.state.panel.player.id,
+                field: 'transparency',
+                value: transparency
+            });
         });
     };
 
