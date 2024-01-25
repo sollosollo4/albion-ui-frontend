@@ -189,8 +189,9 @@ function createWorker() {
 
 app.whenReady().then(() => {
 
-  const userDataPath = app.getPath('userData');
-const configPath = path.join(userDataPath, 'res.json');
+  const userDataPath = app.getPath('appData');
+  console.log(userDataPath)
+  const configPath = path.join(userDataPath, 'res.json');
   fs.readFile(configPath, 'utf8', (err, data) => {
     try {
       if(err) throw new Error(err);

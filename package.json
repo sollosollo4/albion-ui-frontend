@@ -64,17 +64,25 @@
     "laravel-echo": "^1.15.3"
   },
   "build": {
+    "appId": "com.sollosollo4.albion-overlay",
+    "productName": "AlbionOverlay",
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "./build/*",
       "./node_modules/**/*"
     ],
-    "publish": {
-      "provider": "github",
-      "repo": "electron-cra-example",
-      "owner": "johndyer24"
-    },
     "extraMetadata": {
       "main": "./build/electron/main.js"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "menuCategory": "Albion Overlay",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }
