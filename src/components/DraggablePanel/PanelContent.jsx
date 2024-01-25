@@ -22,7 +22,6 @@ class PanelContent extends Component {
     }
 
     handleButtonsData = (event, data) => {
-        console.log([this.props.panel.player.id , data.pressButtonData.userId])
         if(data.pressButtonData.userId != this.props.panel.player.id)
             return;
         let switches = ['q', 'w', 'e', 'r', 'd', 'f'];

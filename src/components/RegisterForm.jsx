@@ -29,13 +29,10 @@ class RegisterForm extends React.Component {
       cookieArray.forEach(cookie => {
         document.cookie = cookie.trim();
       });*/
-
-      console.log('Registration successful:', response.data);
       this.props.onFormSubmit(response.data);
       this.props.closeModal();
     })
     .catch(error => {
-      console.error('Registration failed:', error.response.data);
       alert(error.response.data.message);
     });
   };

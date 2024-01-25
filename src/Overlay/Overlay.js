@@ -19,9 +19,7 @@ class Overlay extends Component {
   handlePanelsData = (event, receivedPanels) => {
     this.setState(() => ({
       panels: receivedPanels,
-    }), () => {
-      console.log(this.state.panels)
-    });
+    }));
   };
 
   render() {

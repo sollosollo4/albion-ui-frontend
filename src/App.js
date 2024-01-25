@@ -46,7 +46,6 @@ class App extends Component {
   };
 
   handleRegisterFormSubmit = (response) => {
-    console.log(response);
     this.setState({ Auth: response.data }, () => {
       this.joinEchoChannel();
     });
@@ -108,13 +107,7 @@ class App extends Component {
 
       })
       .listen('PressButtonEvent', (e) => {
-        console.log("SOME PLAYER IN ROOM PRESS BUTTON")
         electron.ipcRenderer.send('PressButtonEvent', e);
-        console.log(e)
-      })
-      .listen('ProfileDataEvent', (e) => {
-        console.log("SOME PLAYER IN ROOM SEND NEW PROFILE DATA")
-        console.log(e)
       });
 
     electron.ipcRenderer.send('get-positions', {
