@@ -36,8 +36,10 @@
     "react-test": "react-scripts test --env=jsdom",
     "react-eject": "react-scripts eject",
     "build-react": "react-scripts build",
-    "build-electron": "mkdir build/electron & robocopy electron build/electron /S",
-    "package": "electron-builder build --win -c.extraMetadata.main=build/electron/electron.js --publish never"
+    "build-electron": "mkdir build/electron & mkdir build/opencv & robocopy electron build/electron /S",
+    "package": "electron-builder build --win --publish never",
+    "opencv-build": "build-opencv --electron --nocontrib rebuild",
+    "opencv-npm-build": "opencv-build-npm --nocontrib --electron"
   },
   "eslintConfig": {
     "extends": [

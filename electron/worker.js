@@ -87,7 +87,7 @@ setInterval(() => {
     parentPort.postMessage({
         type: 'get-screenshot'
     });
-}, 500);
+}, 900);
 
 parentPort.on('message', message => {
     if (message.type === 'set-screenshot') {

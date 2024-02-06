@@ -5,7 +5,6 @@ const url = require('url');
 const fs = require('fs');
 const cv = require('@u4/opencv4nodejs');
 
-
 var data_resolution_coords =
 {
   resolution1920x1080: {
@@ -61,7 +60,9 @@ function createMainWindow() {
 
   //mainWindow.webContents.openDevTools({ mode: 'detach', activate: false })
 
-  mainWindow.on('close', () => app.quit());
+  mainWindow.on('close', function() {
+    app.quit()
+  });
 
   return mainWindow;
 }
@@ -188,10 +189,9 @@ function createWorker() {
 }
 
 app.whenReady().then(() => {
-
-  const userDataPath = app.getPath('appData');
-  console.log(userDataPath)
-  const configPath = path.join(userDataPath, 'res.json');
+  const userDataPath = app.getPath('exe');
+  const configPath = path.join(require('path').dirname(userDataPath), 'res.json');
+  console.log(configPath)
   fs.readFile(configPath, 'utf8', (err, data) => {
     try {
       if(err) throw new Error(err);
@@ -254,9 +254,9 @@ app.whenReady().then(() => {
     mainWindow.webContents.send('panels-data-m', panels);
   });
 })
-  .catch((echo) => {
-    console.log(echo);
-  });
+.catch((echo) => {
+  console.log(echo);
+});
 
 app.on('activate', function () {
   if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
